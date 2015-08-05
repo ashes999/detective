@@ -11,11 +11,12 @@ NPC_TEMPLATE_IDS = [1]    # NPC IDs of events we can copy
 NPC_SPEEDS = [2, 3, 4, 5] # slower to faster
 NPC_FREQUENCIES = [2, 3, 4] # lower to higher
 
-# requires spawn_events.rb
+require 'scripts/spawn_events'
+require 'scripts/name_generator'
 
 # A wrapper around the RPG Maker event. It exposes some properties and stuff, and methods like die.
 class Npc
-  attr_reader :spritesheet_file, :spritesheet_index, :move_speed, :move_frequency, :template_id
+  attr_reader :spritesheet_file, :spritesheet_index, :move_speed, :move_frequency, :template_id, :name
   attr_accessor :event
   
   # spritesheet_file is the filename used for the graphic, eg. Actor1.
@@ -28,6 +29,8 @@ class Npc
     @move_speed = move_speed || NPC_SPEEDS.sample
     @move_frequency = move_frequency || NPC_FREQUENCIES.sample    
     @death_spritesheet = @spritesheet_file == 'Actor1' || @spritesheet_file == 'Actor2' ? DEATH_SPRITESHEETS[0] : UNKNOWN    
+    @name = NameGenerator::generate_name
+    @dead = false
   end
   
   def update_event(event)
@@ -40,6 +43,7 @@ class Npc
   end
   
   def die
+    @dead = true
     # show death
     sheet_num = @spritesheet_file[5, @spritesheet_file.length].to_i # the "2" in "Actor2"
     index = (@spritesheet_index / 4) + (2 * (sheet_num - 1))    
@@ -50,6 +54,14 @@ class Npc
     @event.stop_walking
     @event.animation_frame = 0 # the most dead-looking.
   end  
+  
+  def talk
+    if @dead
+      show_message "#{@name} is dead ..."
+    else
+      show_message "#{@name}: Hi! The time is #{Time.new}"
+    end
+  end
 end
 
 class NpcSpawner  

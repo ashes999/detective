@@ -53,6 +53,14 @@ class Npc
 end
 
 class NpcSpawner  
+  def self.generate_npcs(n = 6)
+    npcs = []
+    n.times do
+      npcs << create_npc
+    end
+    npcs.sample.die
+  end
+  
   def self.create_npc
     npc = Npc.new
     events = $game_map.events    
@@ -61,7 +69,8 @@ class NpcSpawner
     template_id = npc.template_id
     $game_map.spawn_event(location[:x], location[:y], template_id, DATA_MAP_ID)          
     event = events[events.keys[-1]]    
-    npc.update_event(event)   
+    npc.update_event(event)
+    return npc
   end
   
   private

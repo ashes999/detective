@@ -49,9 +49,11 @@ class Npc
   
   def talk
     if @dead
-      show_message "#{@name} is dead ..."
+      message = "#{@name} is dead ..."
     else
-      show_message "#{@name}: I was with #{@alibi_person.name} all day."
+      message = "#{@name}: I was with #{@alibi_person.name} all day."
     end
+    show_message message
+    return message
   end
 end

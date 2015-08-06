@@ -1,6 +1,9 @@
 require 'scripts/logger'
 require 'scripts/npc_spawner'
 
+# Other requires just to load the codez; not used below
+require 'scripts/models/notebook'
+
 class DetectiveGame
   def self.generate_scenario(num_npcs = 6)
     

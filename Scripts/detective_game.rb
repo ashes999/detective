@@ -5,7 +5,19 @@ require 'scripts/npc_spawner'
 require 'scripts/models/notebook'
 
 class DetectiveGame
-  def self.generate_scenario(num_npcs = 6)
+
+  @@instance = nil
+  
+  def initialize
+    @@instance = self
+  end
+  
+  def self.instance
+    return @@instance
+  end
+  
+  def generate_scenario(num_npcs = 6)    
+    raise "Need an even number of people for this scenario" if num_npcs % 2 == 1
     
     npcs = []
     
@@ -13,21 +25,21 @@ class DetectiveGame
       npcs << NpcSpawner::create_npc
     end
     
-    @@killer = npcs.sample
-    @@victim = @@killer
-    @@victim = npcs.sample while @@victim == @@killer
-    @@victim.die
+    @killer = npcs.sample
+    @victim = @killer
+    @victim = npcs.sample while @victim == @killer
+    @victim.die
 
-    Logger.log "Killer: #{@@killer.name}"
-    Logger.log "Victim: #{@@victim.name}"
+    Logger.log "Killer: #{@killer.name}"
+    Logger.log "Victim: #{@victim.name}"
     
-    non_victims = npcs - [@@victim]
-    non_killers = non_victims - [@@killer]
-    
-    raise "Need an even number of people for this scenario" if non_killers.size % 2 == 1
+    non_victims = npcs - [@victim]
+    non_killers = non_victims - [@killer]
+        
     non_killers.shuffle!    
-    @@killer.alibi_person = non_killers.sample
+    @killer.alibi_person = non_killers.sample
     
+    # Pick two random people and link their alibis
     while non_killers.size > 0 do
       n1 = non_killers.pop
       n2 = non_killers.pop      

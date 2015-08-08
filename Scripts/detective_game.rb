@@ -6,6 +6,10 @@ require 'scripts/models/notebook'
 
 class DetectiveGame
 
+  # TODO: this is updated by hand :(
+  # These are the names of ITEMS in the DB.
+  POTENTIAL_MURDER_WEAPONS = ['Sword', 'Pickaxe', 'Vase', 'Pot', 'Shovel']
+
   @@instance = nil
   
   def initialize
@@ -18,8 +22,34 @@ class DetectiveGame
   
   def generate_scenario(num_npcs = 6)    
     raise "Need an even number of people for this scenario" if num_npcs % 2 == 1
+    generate_npcs(num_npcs)
+    pick_murder_weapon
+  end
+  
+  # Changes the close-up image of the murder weapon to the blood-streaked one
+  def got_magnifying_glass
+    for item in $data_items do
+      next if item.nil?
+      if item.name == @murder_weapon
+        murder_item = item 
+        break
+      end
+    end
     
-    npcs = []
+    raise "Can't find item named #{@murder_weapon} for murder weapon" if murder_item.nil?
+    murder_item.image = "inventory\\#{murder_item.name}-blood"
+  end
+  
+  private
+  
+  def pick_murder_weapon
+    @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
+    Logger.log("Murder weapon: #{@murder_weapon}")
+  end
+  
+  
+  def generate_npcs(num_npcs)
+  npcs = []
     
     num_npcs.times do
       npcs << NpcSpawner::create_npc

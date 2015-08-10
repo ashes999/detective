@@ -9,6 +9,8 @@ class DetectiveGame
   # TODO: this is updated by hand :(
   # These are the names of ITEMS in the DB.
   POTENTIAL_MURDER_WEAPONS = ['Sword', 'Pickaxe', 'Vase', 'Pot', 'Shovel']
+  
+  attr_reader :npcs
 
   @@instance = nil
   
@@ -49,13 +51,13 @@ class DetectiveGame
   
   
   def generate_npcs(num_npcs)
-  npcs = []
+    @npcs = []
     
     num_npcs.times do
-      npcs << NpcSpawner::create_npc
+      @npcs << NpcSpawner::create_npc
     end
     
-    @killer = npcs.sample
+    @killer = @npcs.sample
     @victim = @killer
     @victim = npcs.sample while @victim == @killer
     @victim.die
@@ -63,7 +65,7 @@ class DetectiveGame
     Logger.log "Killer: #{@killer.name}"
     Logger.log "Victim: #{@victim.name}"
     
-    non_victims = npcs - [@victim]
+    non_victims = @npcs - [@victim]
     non_killers = non_victims - [@killer]
         
     non_killers.shuffle!    

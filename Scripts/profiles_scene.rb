@@ -5,35 +5,35 @@ class Scene_Profiles < Scene_ItemBase
   def start
     super
     create_suspects_window
-    create_item_window
+    create_details_window
   end
   #--------------------------------------------------------------------------
   # * Create Category Window
   #--------------------------------------------------------------------------
   def create_suspects_window
-    @category_window = Window_SuspectsList.new
-    @category_window.viewport = @viewport
-    @category_window.set_handler(:ok,     method(:on_category_ok))
-    @category_window.set_handler(:cancel, method(:return_scene))
+    @suspect_list = Window_SuspectsList.new
+    @suspect_list.viewport = @viewport
+    @suspect_list.set_handler(:ok,     method(:on_category_ok))
+    @suspect_list.set_handler(:cancel, method(:return_scene))
   end
   #--------------------------------------------------------------------------
   # * Create Item Window
   #--------------------------------------------------------------------------
-  def create_item_window
-    wy = @category_window.y + @category_window.height
+  def create_details_window
+    wy = @suspect_list.y + @suspect_list.height
     wh = Graphics.height - wy
-    @item_window = Window_ItemList.new(0, wy, Graphics.width, wh)
-    @item_window.viewport = @viewport
-    @item_window.set_handler(:ok,     method(:on_item_ok))
-    @item_window.set_handler(:cancel, method(:on_item_cancel))
-    @category_window.item_window = @item_window
+    @details_window = Window_ItemList.new(0, wy, Graphics.width, wh)
+    @details_window.viewport = @viewport
+    @details_window.set_handler(:ok,     method(:on_item_ok))
+    @details_window.set_handler(:cancel, method(:on_item_cancel))
+    @suspect_list.details_window = @details_window
   end
   #--------------------------------------------------------------------------
   # * Category [OK]
   #--------------------------------------------------------------------------
   def on_category_ok
-    @item_window.activate
-    @item_window.select_last
+    @details_window.activate
+    @details_window.select_last
   end
   #--------------------------------------------------------------------------
   # * Item [OK]
@@ -46,8 +46,8 @@ class Scene_Profiles < Scene_ItemBase
   # * Item [Cancel]
   #--------------------------------------------------------------------------
   def on_item_cancel
-    @item_window.unselect
-    @category_window.activate
+    @details_window.unselect
+    @suspect_list.activate
   end
   #--------------------------------------------------------------------------
   # * Play SE When Using Item
@@ -60,7 +60,7 @@ class Scene_Profiles < Scene_ItemBase
   #--------------------------------------------------------------------------
   def use_item
     super
-    @item_window.redraw_current_item
+    @suspect_list.redraw_current_item
   end
 end
 
@@ -69,7 +69,7 @@ class Window_SuspectsList < Window_HorzCommand
   #--------------------------------------------------------------------------
   # * Public Instance Variables
   #--------------------------------------------------------------------------
-  attr_reader   :item_window
+  attr_reader   :suspect_list
   #--------------------------------------------------------------------------
   # * Object Initialization
   #--------------------------------------------------------------------------
@@ -92,7 +92,7 @@ class Window_SuspectsList < Window_HorzCommand
   #--------------------------------------------------------------------------
   def update
     super
-    @item_window.category = current_symbol if @item_window
+    @suspect_list.category = current_symbol if @suspect_list
   end
   #--------------------------------------------------------------------------
   # * Create Command List
@@ -105,8 +105,8 @@ class Window_SuspectsList < Window_HorzCommand
   #--------------------------------------------------------------------------
   # * Set Item Window
   #--------------------------------------------------------------------------
-  def item_window=(item_window)
-    @item_window = item_window
+  def details_window=(details_window)
+    @details_window = details_window
     update
   end
 end

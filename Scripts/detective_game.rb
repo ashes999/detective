@@ -1,5 +1,6 @@
 require 'scripts/logger'
 require 'scripts/npc_spawner'
+require 'scripts/ui/profiles_scene'
 
 # Other requires just to load the codez; not used below
 require 'scripts/models/notebook'

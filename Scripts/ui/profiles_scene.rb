@@ -85,8 +85,8 @@ class Window_SuspectsList < Window_HorzCommand
     # TODO: replace with REAL data.
     # 0 = suspicious, 1 = unknown, 2 = innocent
     # select_symbol doesn't work :/
-    data = [0, 0, 1, 1, 2, 2]    
-    @status_window.select(data[@index])    
+    data = Notebook.instance.status_for(@index)
+    @status_window.select(data)    
   end
 end
 
@@ -113,6 +113,7 @@ class Window_SuspectsStatus < Window_HorzCommand
   end
 
   def make_command_list
+    # These must match the order in notebook.rb's status_for
     ['Suspicious', 'Unknown', 'Innocent'].each do |c|
       add_command(c, c.to_sym)
     end

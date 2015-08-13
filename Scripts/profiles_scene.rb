@@ -78,6 +78,16 @@ class Window_SuspectsList < Window_HorzCommand
     @status_window = status_window
     update
   end
+  
+  def process_cursor_move
+    super
+    # @index is the current window's index. This is how we select their status.
+    # TODO: replace with REAL data.
+    # 0 = suspicious, 1 = unknown, 2 = innocent
+    # select_symbol doesn't work :/
+    data = [0, 0, 1, 1, 2, 2]    
+    @status_window.select(data[@index])    
+  end
 end
 
 class Window_SuspectsStatus < Window_HorzCommand

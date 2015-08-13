@@ -1,12 +1,10 @@
 class Scene_Profiles < Scene_ItemBase
-  STATUS_WINDOW_HEIGHT = 48
-  
   # Start Processing
   def start
     super
     create_suspects_window
-    create_details_window
     create_status_window
+    create_details_window    
   end
 
   def create_suspects_window
@@ -18,37 +16,29 @@ class Scene_Profiles < Scene_ItemBase
 
   def create_details_window
     wy = @suspect_list.y + @suspect_list.height
-    wh = Graphics.height - wy  - STATUS_WINDOW_HEIGHT
+    wh = Graphics.height - wy  - @status_window.height
     @details_window = Window_ItemList.new(0, wy, Graphics.width, wh)
     @details_window.viewport = @viewport
-    #@details_window.set_handler(:ok,     method(:on_item_ok))
-    #@details_window.set_handler(:cancel, method(:on_item_cancel))
     @suspect_list.details_window = @details_window
   end
   
   def create_status_window    
-    @status_window = Window_SuspectsStatus.new(0, @details_window.y + @details_window.height, Graphics.width, STATUS_WINDOW_HEIGHT)
+    @status_window = Window_SuspectsStatus.new
     @status_window.viewport = @viewport
-    #@suspect_list.set_handler(:ok,     method(:on_suspect_ok))
-    #@suspect_list.set_handler(:cancel, method(:return_scene))
     @suspect_list.status_window = @status_window
+    @status_window.set_handler(:cancel, method(:on_status_cancel))
+    @status_window.deactivate
   end
 
   # when you select a category (suspect)
-  def on_suspect_ok
-    @details_window.activate
-    @details_window.select_last
+  def on_suspect_ok    
+    @status_window.activate
   end
-
-  #def on_item_ok
-  #  $game_party.last_item.object = item
-  #  determine_item
-  #end
-
-  #def on_item_cancel
-  #  @details_window.unselect
-  #  @suspect_list.activate
-  #end
+  
+  def on_status_cancel
+    @status_window.deactivate       
+    @suspect_list.activate
+  end
 end
 
 
@@ -90,8 +80,31 @@ class Window_SuspectsList < Window_HorzCommand
   end
 end
 
-class Window_SuspectsStatus < Window_Base
-  def initialize(x, y, w, h)
+class Window_SuspectsStatus < Window_HorzCommand
+  MY_HEIGHT = 48 # reverse-engineered through experimentation
+  attr_reader   :suspect_list, :status_window
+
+  def initialize
+    super(0, Graphics.height - MY_HEIGHT)
+  end
+
+  def window_width
+    Graphics.width
+  end
+  
+  ### Maximum number of items to show at one time. Items are fixed width :(
+  def col_max
+    return 3
+  end
+
+  def update
     super
+    #@suspect_list.category = current_symbol if @suspect_list
+  end
+
+  def make_command_list
+    ['Suspicious', 'Unknown', 'Innocent'].each do |c|
+      add_command(c, c.to_sym)
+    end
   end
 end

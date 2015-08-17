@@ -1,8 +1,6 @@
 require 'scripts/logger'
 require 'scripts/npc_spawner'
 require 'scripts/ui/profiles_scene'
-
-# Other requires just to load the codez; not used below
 require 'scripts/models/notebook'
 
 class DetectiveGame
@@ -11,22 +9,21 @@ class DetectiveGame
   # These are the names of ITEMS in the DB.
   POTENTIAL_MURDER_WEAPONS = ['Sword', 'Pickaxe', 'Vase', 'Pot', 'Shovel']
   
-  attr_reader :npcs
+  attr_reader :npcs, :notebook
 
   @@instance = nil
   
-  def initialize
+  def initialize(num_npcs = 6)
+    Logger.log("Created DG #{self}")
     @@instance = self
+    raise "Need an even number of people for this scenario" if num_npcs % 2 == 1
+    generate_npcs(num_npcs)
+    pick_murder_weapon
+    @notebook = Notebook.new(@npcs)
   end
   
   def self.instance
     return @@instance
-  end
-  
-  def generate_scenario(num_npcs = 6)    
-    raise "Need an even number of people for this scenario" if num_npcs % 2 == 1
-    generate_npcs(num_npcs)
-    pick_murder_weapon
   end
   
   # Changes the close-up image of the murder weapon to the blood-streaked one

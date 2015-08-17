@@ -1,18 +1,9 @@
 class Notebook
   
-  @@instance = nil  
-  
-  def self.instance
-    # May be invoked before initializing; make sure it's not nil
-    @@instance ||= Notebook.new    
-    return @@instance
-  end
-  
-  def initialize
-    @@instance = self
+  def initialize(npcs)
+    Logger.log("Created notebook #{self}")
+    raise 'Can\'t create notebook without NPCs' if npcs.nil? || npcs.count == 0
     @notes = []
-    
-    npcs = DetectiveGame::instance.npcs
     # Profiles screen just has the NPC index. Blurgh.
     @npc_status = []
     npcs.each do |n|
@@ -36,7 +27,7 @@ class Notebook
   end
   
   def status_for(npc_index)
-    raw = @npc_status[npc_index]
+    raw = @npc_status[npc_index]    
     # These must match the order in profiles_scene's make_command_list
     return 0 if raw == :suspicious
     return 1 if raw == :unknown

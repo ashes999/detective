@@ -19,7 +19,7 @@ class Scene_Profiles < Scene_ItemBase
     wh = Graphics.height - wy  - @status_window.height
     @details_window = Window_ItemList.new(0, wy, Graphics.width, wh)
     @details_window.viewport = @viewport
-    @suspect_list.details_window = @details_window
+    @suspect_list.details_window = @details_window    
   end
   
   def create_status_window    
@@ -30,9 +30,10 @@ class Scene_Profiles < Scene_ItemBase
     @status_window.deactivate
   end
 
-  # when you select a category (suspect)
+  # when you select a suspect
   def on_suspect_ok    
     @status_window.activate
+    @details_window.deactivate
   end
   
   def on_status_cancel
@@ -58,11 +59,6 @@ class Window_SuspectsList < Window_HorzCommand
     return 6
   end
 
-  def update
-    super
-    @suspect_list.category = current_symbol if @suspect_list
-  end
-
   def make_command_list
     DetectiveGame::instance.npcs.each do |n|
       add_command(n.name, n.name.to_sym)
@@ -79,13 +75,15 @@ class Window_SuspectsList < Window_HorzCommand
     update
   end
   
-  def process_cursor_move
+  def index=(index)
     super
+    return if @status_window.nil?
     # @index is the current window's index. This is how we select their status.
     # TODO: replace with REAL data.
     # 0 = suspicious, 1 = unknown, 2 = innocent
     # select_symbol doesn't work :/
-    data = Notebook.instance.status_for(@index)
+    data = DetectiveGame::instance.notebook.status_for(@index)
+    Logger.log("Cursor moved to #{@index}; selecting #{data}")
     @status_window.select(data)    
   end
 end
@@ -109,7 +107,7 @@ class Window_SuspectsStatus < Window_HorzCommand
 
   def update
     super
-    #@suspect_list.category = current_symbol if @suspect_list
+    #@suspect_list.category = current_symbol if @suspect_list    
   end
 
   def make_command_list

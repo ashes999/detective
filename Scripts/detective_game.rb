@@ -8,21 +8,24 @@ class DetectiveGame
   # TODO: this is updated by hand :(
   # These are the names of ITEMS in the DB.
   POTENTIAL_MURDER_WEAPONS = ['Sword', 'Pickaxe', 'Vase', 'Pot', 'Shovel']
-  
+
+  # The key for storing this game's data in our save-game.
+  DATA_KEY = :detective_game
   attr_reader :npcs, :notebook
 
   @@instance = nil
   
-  def initialize(num_npcs = 6)
-    @@instance = self
+  def self.instance
+    @@instance = DataManager.get(DATA_KEY) || DetectiveGame.new    
+    return @@instance
+  end
+  
+  def initialize(num_npcs = 6)        
     raise "Need an even number of people for this scenario" if num_npcs % 2 == 1
     generate_npcs(num_npcs)
     pick_murder_weapon
     @notebook = Notebook.new(@npcs)
-  end
-  
-  def self.instance
-    return @@instance
+    DataManager.set(DATA_KEY, self)
   end
   
   # Changes the close-up image of the murder weapon to the blood-streaked one
@@ -36,10 +39,11 @@ class DetectiveGame
     end
     
     raise "Can't find item named #{@murder_weapon} for murder weapon" if murder_item.nil?
+    # change big picture in inventory for this item to the blood-splattered one
     murder_item.image = "inventory\\#{murder_item.name}-blood"
   end
   
-  private
+  private  
   
   def pick_murder_weapon
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample

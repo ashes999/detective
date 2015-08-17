@@ -14,7 +14,6 @@ class DetectiveGame
   @@instance = nil
   
   def initialize(num_npcs = 6)
-    Logger.log("Created DG #{self}")
     @@instance = self
     raise "Need an even number of people for this scenario" if num_npcs % 2 == 1
     generate_npcs(num_npcs)

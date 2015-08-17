@@ -4,7 +4,11 @@ class Scene_Profiles < Scene_ItemBase
     super
     create_suspects_window
     create_status_window
-    create_details_window    
+    create_details_window
+    
+    # trigger the UI for the first suspect to be correct
+    @suspect_list.index = 0
+    
   end
 
   def create_suspects_window
@@ -26,6 +30,7 @@ class Scene_Profiles < Scene_ItemBase
     @status_window = Window_SuspectsStatus.new
     @status_window.viewport = @viewport
     @suspect_list.status_window = @status_window
+    @status_window.set_handler(:ok, method(:on_status_ok))
     @status_window.set_handler(:cancel, method(:on_status_cancel))
     @status_window.deactivate
   end
@@ -37,8 +42,16 @@ class Scene_Profiles < Scene_ItemBase
   end
   
   def on_status_cancel
-    @status_window.deactivate       
+    # go back to suspect list
+    @status_window.deactivate
     @suspect_list.activate
+  end
+  
+  def on_status_ok
+    npc_index = @suspect_list.index
+    status = @status_window.current_symbol
+    DetectiveGame::instance.notebook.set_npc_status(npc_index, status)    
+    on_status_cancel # go back to suspect list
   end
 end
 
@@ -78,12 +91,7 @@ class Window_SuspectsList < Window_HorzCommand
   def index=(index)
     super
     return if @status_window.nil?
-    # @index is the current window's index. This is how we select their status.
-    # TODO: replace with REAL data.
-    # 0 = suspicious, 1 = unknown, 2 = innocent
-    # select_symbol doesn't work :/
     data = DetectiveGame::instance.notebook.status_for(@index)
-    Logger.log("Cursor moved to #{@index}; selecting #{data}")
     @status_window.select(data)    
   end
 end
@@ -105,15 +113,10 @@ class Window_SuspectsStatus < Window_HorzCommand
     return 3
   end
 
-  def update
-    super
-    #@suspect_list.category = current_symbol if @suspect_list    
-  end
-
   def make_command_list
     # These must match the order in notebook.rb's status_for
-    ['Suspicious', 'Unknown', 'Innocent'].each do |c|
-      add_command(c, c.to_sym)
+    Notebook.STATUS_MAP.keys.each do |c|
+      add_command(c.to_s.capitalize, c)
     end
   end
 end

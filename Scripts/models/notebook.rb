@@ -1,7 +1,16 @@
 class Notebook
+
+  STATUS_MAP = {
+    :suspicious => 0,
+    :unknown => 1,
+    :innocent => 2
+  }
+  
+  def self.STATUS_MAP
+    return STATUS_MAP
+  end
   
   def initialize(npcs)
-    Logger.log("Created notebook #{self}")
     raise 'Can\'t create notebook without NPCs' if npcs.nil? || npcs.count == 0
     @notes = []
     # Profiles screen just has the NPC index. Blurgh.
@@ -27,11 +36,14 @@ class Notebook
   end
   
   def status_for(npc_index)
-    raw = @npc_status[npc_index]    
+    raw = @npc_status[npc_index]
     # These must match the order in profiles_scene's make_command_list
-    return 0 if raw == :suspicious
-    return 1 if raw == :unknown
-    return 2 if raw == :innocent
-    raise "Not sure what status number corresponds to #{npc_index}'s status of #{raw}."
+    raise "Not sure what status number corresponds to #{npc_index}'s status of #{raw}." unless STATUS_MAP.key?(raw)
+    return STATUS_MAP[raw]    
+  end
+  
+  def set_npc_status(npc_index, status)
+    raise "Invalid status; please send one of #{STATUS_MAP.keys}" unless STATUS_MAP.key?(status)
+    @npc_status[npc_index] = status
   end
 end

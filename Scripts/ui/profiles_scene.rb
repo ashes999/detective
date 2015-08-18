@@ -88,11 +88,15 @@ class Window_SuspectsList < Window_HorzCommand
     update
   end
   
+  # Run when the selected index changes
   def index=(index)
     super
     return if @status_window.nil?
-    data = DetectiveGame::instance.notebook.status_for(@index)
-    @status_window.select(data)    
+    data = DetectiveGame::instance.notebook.status_for(index)
+    @status_window.select(data)
+    
+    @details_window.refresh # clears the old text    
+    @details_window.draw_text_ex(0, 0, DetectiveGame::instance.notebook.notes_for(index))
   end
 end
 

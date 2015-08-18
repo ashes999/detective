@@ -12,6 +12,7 @@ class Notebook
   
   def initialize(npcs)
     raise 'Can\'t create notebook without NPCs' if npcs.nil? || npcs.count == 0
+    @npcs = npcs
     @notes = []
     # Profiles screen just has the NPC index. Blurgh.
     @npc_status = []
@@ -20,7 +21,7 @@ class Notebook
     end
   end
   
-  def note(text)
+  def note(text)    
     @notes << text unless @notes.include?(text)
   end
   
@@ -31,6 +32,16 @@ class Notebook
     @notes.each do |n|
       count += 1
       to_return = "#{to_return}#{count}) #{n}\n"
+    end
+    return to_return
+  end
+  
+  def notes_for(npc_index)
+    npc_name = @npcs[npc_index].name
+    to_return = ''
+    @notes.each do |n|
+      # match the name with word-boundaries (full word)
+      to_return = "#{to_return}#{n}\n" if n.match(/\b#{npc_name}/)
     end
     return to_return
   end

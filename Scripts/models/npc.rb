@@ -47,13 +47,13 @@ class Npc
     @event.animation_frame = 0 # the most dead-looking.
   end  
   
-  def talk
+  def talk    
     if @dead
       message = "#{@name} is dead ..."
     else
       message = "#{@name}: I was with #{@alibi_person.name} all day."
     end
-    show_message message
-    return message
+    show_message message    
+    DetectiveGame::instance.notebook.note(message)
   end
 end

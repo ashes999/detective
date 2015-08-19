@@ -43,6 +43,12 @@ class DetectiveGame
     murder_item.image = "inventory\\#{murder_item.name}-blood"
   end
   
+  def show_suspects_choice
+    setup_choices(['one', 'two', 'three', 'four', 'five', 'six'])
+    wait_for_message
+    result_index = @branch[@indent]
+  end  
+  
   private  
   
   def pick_murder_weapon
@@ -80,4 +86,7 @@ class DetectiveGame
       n2.alibi_person = n1
     end
   end
+  
+  private
+  
 end

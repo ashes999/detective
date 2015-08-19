@@ -53,7 +53,7 @@ class Npc
     else
       message = "#{@name}: I was with #{@alibi_person.name} all day."
     end
-    show_message message    
+    Game_Interpreter.instance.show_message(message)
     DetectiveGame::instance.notebook.note(message)
   end
 end

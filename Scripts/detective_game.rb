@@ -2,6 +2,7 @@ require 'scripts/logger'
 require 'scripts/npc_spawner'
 require 'scripts/ui/profiles_scene'
 require 'scripts/models/notebook'
+require 'scripts/api/vxace_api'
 
 class DetectiveGame
 
@@ -44,9 +45,8 @@ class DetectiveGame
   end
   
   def show_suspects_choice
-    setup_choices(['one', 'two', 'three', 'four', 'five', 'six'])
-    wait_for_message
-    result_index = @branch[@indent]
+    choice = Game_Interpreter.instance.show_choices(['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'])
+    Logger.log("CHOSE: #{choice}")
   end  
   
   private  

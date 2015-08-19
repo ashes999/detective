@@ -54,6 +54,8 @@ class DetectiveGame
         else
           Game_Interpreter.instance.show_message("#{@killer.name}: WRONG! I killed #{@victim.name} with the #{@murder_weapon}! You die!")
         end
+        
+        Game_Interpreter.instance.game_over
       end
     end
   end  
@@ -61,7 +63,7 @@ class DetectiveGame
   private  
   
   def show_murder_weapons_list
-    Game_Interpreter.instance.show_message('What\'s the murder weapon?')
+    Game_Interpreter.instance.show_message('What\'s the murder weapon?', :wait => false)
     weapons_list = ['Cancel']
     POTENTIAL_MURDER_WEAPONS.map { |w| weapons_list << w }
     choice = Game_Interpreter.instance.show_choices(weapons_list, { :cancel_index => 0, :return_type => :name})
@@ -69,7 +71,7 @@ class DetectiveGame
   end
   
   def show_suspects_list  
-    Game_Interpreter.instance.show_message('Who\'s the killer?')
+    Game_Interpreter.instance.show_message('Who\'s the killer?', :wait => false)
     npc_names = ['Cancel']
     @npcs.map { |n| npc_names << n.name }
     choice = Game_Interpreter.instance.show_choices(npc_names, { :cancel_index => 0, :return_type => :name})

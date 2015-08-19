@@ -44,12 +44,37 @@ class DetectiveGame
     murder_item.image = "inventory\\#{murder_item.name}-blood"
   end
   
-  def show_suspects_choice
-    choice = Game_Interpreter.instance.show_choices(['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'])
-    Logger.log("CHOSE: #{choice}")
+  def solve_case
+    suspect = show_suspects_list
+    if suspect != 'Cancel'
+      weapon = show_murder_weapons_list
+      if weapon != 'Cancel'
+        if suspect == @killer.name && weapon == @murder_weapon
+          Game_Interpreter.instance.show_message("#{@killer.name}: ARGH! Yes, I killed #{@victim.name} with the #{@murder_weapon}!")
+        else
+          Game_Interpreter.instance.show_message("#{@killer.name}: WRONG! I killed #{@victim.name} with the #{@murder_weapon}! You die!")
+        end
+      end
+    end
   end  
   
   private  
+  
+  def show_murder_weapons_list
+    Game_Interpreter.instance.show_message('What\'s the murder weapon?')
+    weapons_list = ['Cancel']
+    POTENTIAL_MURDER_WEAPONS.map { |w| weapons_list << w }
+    choice = Game_Interpreter.instance.show_choices(weapons_list, { :cancel_index => 0, :return_type => :name})
+    return choice
+  end
+  
+  def show_suspects_list  
+    Game_Interpreter.instance.show_message('Who\'s the killer?')
+    npc_names = ['Cancel']
+    @npcs.map { |n| npc_names << n.name }
+    choice = Game_Interpreter.instance.show_choices(npc_names, { :cancel_index => 0, :return_type => :name})
+    return choice
+  end
   
   def pick_murder_weapon
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample

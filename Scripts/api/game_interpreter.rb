@@ -8,21 +8,25 @@ class Game_Interpreter
   # By default, it's the second choice (same as the UI).
   #
   # choices: a list of choices (eg. ['one', 'two', 'three'])
-  # cancel_index: the choice to return on 'cancel' (eg. 1)
+  # options: A hash of additional options. They are:
+  #    :cancel_index => the index of the choice to return when the user cancels; defaults to -1 (disable cancelling)
+  #    :return_type => :index (return an index in "choices") or :name (return the choice name)
   ###
-  def show_choices(choices, cancel_index = -1)
+  def show_choices(choices, options)
+    cancel_index = options[:cancel_index] || -1
+    return_type = options[:return_type || :index]
     params = []
     params.push(choices)
     params.push(cancel_index)
     setup_choices(params)
     wait_for_message
     result_index = @branch[@indent]
-    return result_index # alternatively, return choices[result_index]
+    return return_type == :name ? choices[result_index] : result_index
   end
 
   ###
   # Show a message on screen, just like the Show Text event.
-  # Not sure why NPCs don't stop if you call this when you talk to them.
+  # This isn't quite the same as talking to an NPC -- events don't stop.
   ###
   def show_message(text)
     $game_message.add(text)

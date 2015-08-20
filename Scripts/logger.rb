@@ -24,7 +24,7 @@ class Logger
 		mode = @@first_message ? 'w' : 'a'
 		
 		File.open('log.txt', mode) { |f|
-			f.write("#{message}\n")
+			f.write("#{Time.new} :: #{message}\n")
 		}
 		
 		@@first_message = false

@@ -4,6 +4,10 @@ require 'scripts/ui/profiles_scene'
 require 'scripts/models/notebook'
 require 'scripts/api/vxace_api'
 
+# Not directly used here, but just load them up please. Thanks.
+require 'scripts/utils/json_parser'
+require 'scripts/utils/external_data'
+
 class DetectiveGame
 
   # TODO: this is updated by hand :(

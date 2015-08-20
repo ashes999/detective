@@ -3,10 +3,10 @@ require 'scripts/npc_spawner'
 require 'scripts/ui/profiles_scene'
 require 'scripts/models/notebook'
 require 'scripts/api/vxace_api'
+require 'scripts/utils/external_data'
 
 # Not directly used here, but just load them up please. Thanks.
 require 'scripts/utils/json_parser'
-require 'scripts/utils/external_data'
 
 class DetectiveGame
 
@@ -25,8 +25,9 @@ class DetectiveGame
     return @@instance
   end
   
-  def initialize(num_npcs = 6)        
-    raise "Need an even number of people for this scenario" if num_npcs % 2 == 1
+  def initialize
+    num_npcs = ExternalData::instance.get(:number_of_npcs)
+    raise "Need an even number of people for this scenario (got #{num_npcs})" if num_npcs % 2 == 1
     generate_npcs(num_npcs)
     pick_murder_weapon
     @notebook = Notebook.new(@npcs)

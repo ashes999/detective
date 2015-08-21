@@ -36,6 +36,7 @@ class ExternalData
       @last_mtime = mtime
       file = File.read(FILENAME)
       json = JSON.decode(file)
+      raise 'Invalid JSON' if json.nil?
       
       # Convert from string keys to symbol keys
       @externs = {}

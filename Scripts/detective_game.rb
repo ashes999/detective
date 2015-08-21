@@ -26,10 +26,21 @@ class DetectiveGame
   end
   
   def initialize
-    num_npcs = ExternalData::instance.get(:number_of_npcs)
-    raise "Need an even number of people for this scenario (got #{num_npcs})" if num_npcs % 2 == 1
+    difficulty = ExternalData::instance.get(:difficulty)
+    raise "Difficulty (#{difficulty}) should be in the range of 1-10" if difficulty < 1 || difficulty > 10
+    
+    min_npcs = ExternalData::instance.get(:min_number_of_npcs)
+    max_npcs = ExternalData::instance.get(:max_number_of_npcs)
+    range = max_npcs - min_npcs
+    
+    # map [1..10] to [0..range] (uniform distribution)
+    # difficulty of 1 = min_npcs, difficulty of 10 = max_npcs    
+    num_npcs = (range * difficulty / 10.0).round    
+    num_npcs = rand(range) + min_npcs            
+  
     generate_npcs(num_npcs)
-    pick_murder_weapon
+    generate_scenario    
+    
     @notebook = Notebook.new(@npcs)
     DataManager.set(DATA_KEY, self)
   end
@@ -83,26 +94,19 @@ class DetectiveGame
     return choice
   end
   
-  def pick_murder_weapon
-    @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
-    Logger.log("Murder weapon: #{@murder_weapon}")
-  end
-  
-  
   def generate_npcs(num_npcs)
     @npcs = []
     
     num_npcs.times do
       @npcs << NpcSpawner::create_npc
     end
-    
+  end
+  
+  def generate_scenario
     @killer = @npcs.sample
     @victim = @killer
     @victim = npcs.sample while @victim == @killer
     @victim.die
-
-    Logger.log "Killer: #{@killer.name}"
-    Logger.log "Victim: #{@victim.name}"
     
     non_victims = @npcs - [@victim]
     non_killers = non_victims - [@killer]
@@ -117,6 +121,8 @@ class DetectiveGame
       n1.alibi_person = n2
       n2.alibi_person = n1
     end
+    
+    @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
   end
   
   private

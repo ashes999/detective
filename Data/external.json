@@ -1,3 +1,5 @@
 {
-    "number_of_npcs": 6
+    "difficulty": 3,
+    "min_number_of_npcs": 5,
+    "max_number_of_npcs": 9
 }

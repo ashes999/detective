@@ -39,7 +39,7 @@ class DetectiveGame
     num_npcs = rand(range) + min_npcs            
   
     generate_npcs(num_npcs)
-    generate_scenario    
+    generate_scenario(difficulty) 
     
     @notebook = Notebook.new(@npcs)
     DataManager.set(DATA_KEY, self)
@@ -102,7 +102,24 @@ class DetectiveGame
     end
   end
   
-  def generate_scenario
+  # Consider evidence as the thing the player seeks (statements and forensics)
+  #
+  # "Signal" is the minimum number of pieces of evidence you need to solve this
+  # "Noise" is any other evidence that's not signal
+  # Difficulty is the metric of how many "signals" you need to solve the case.
+  #
+  # In Sleuth, you have 3 signal people (two people who's alibis match and an odd man out),
+  # and 2 noise people. There are also seven items to look at, one of which is the murder weapon.
+  # That brings us to a total of 3 + 1 => 4 signals.
+  #
+  # Easiest difficulty is three people (A => B, B => A, C => A) + 1 item
+  # Keep it simple, and linear; d1 = 3, d10 = 13 (~3x harder)
+  # m = 0.5, num_signals = difficulty + 3. Simple, and clean.
+  # 
+  # To scale difficulty, we do the following:
+  #   - 1-3 bloody items (gotta scan all to figure out which is it)
+  #   - 
+  def generate_scenario(difficulty)
     @killer = @npcs.sample
     @victim = @killer
     @victim = npcs.sample while @victim == @killer
@@ -111,15 +128,26 @@ class DetectiveGame
     non_victims = @npcs - [@victim]
     non_killers = non_victims - [@killer]
         
-    non_killers.shuffle!    
+    non_killers.shuffle!
+    
+    num_signals = 3 + difficulty
     @killer.alibi_person = non_killers.sample
     
     # Pick two random people and link their alibis
+    # To deal with odd numbers, make a trio
     while non_killers.size > 0 do
       n1 = non_killers.pop
-      n2 = non_killers.pop      
-      n1.alibi_person = n2
-      n2.alibi_person = n1
+      n2 = non_killers.pop
+      
+      if non_killers.size % 2 == 1
+        n3 = non_killers.pop
+        n1.alibi_person = n2
+        n2.alibi_person = n3
+        n3.alibi_person = n1
+      else
+        n1.alibi_person = n2
+        n2.alibi_person = n1
+      end
     end
     
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample

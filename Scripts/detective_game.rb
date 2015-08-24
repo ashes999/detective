@@ -43,6 +43,10 @@ class DetectiveGame
     
     @notebook = Notebook.new(@npcs)
     DataManager.set(DATA_KEY, self)
+    
+    Game_Interpreter.instance.show_message 'Check the notebook to view notes, and solve the case.
+Use the Profiles screen to view suspect profiles.'
+
   end
   
   # Changes the close-up image of the murder weapon to the blood-streaked one

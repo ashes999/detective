@@ -13,7 +13,10 @@ class DetectiveGame
   # TODO: this is updated by hand :(
   # These are the names of ITEMS in the DB.
   POTENTIAL_MURDER_WEAPONS = ['Sword', 'Pickaxe', 'Vase', 'Pot', 'Shovel']
-  HOUSES = (1..8).to_a.map { |x| "House#{x}"} + ['Mansion1']
+  
+  # Potential maps to spawn on. Names don't cut it (not accessible through the API), so we use map IDs.
+  # 7-14 are House1-House8; 1 = Mansion1
+  HOUSES = (7..14).to_a + [1]
 
   # The key for storing this game's data in our save-game.
   DATA_KEY = :detective_game
@@ -103,7 +106,7 @@ Use the Profiles screen to view suspect profiles.'
     @npcs = []
     
     num_npcs.times do
-      @npcs << NpcSpawner::create_npc
+      @npcs << Npc.new
     end
   end
   

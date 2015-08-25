@@ -5,7 +5,7 @@ class Npc
   
   # attributes we need to physically appear on-screen properly and walk around
   attr_reader :spritesheet_file, :spritesheet_index, :move_speed, :move_frequency, :template_id
-  attr_accessor :event
+  attr_accessor :event, :map_id
   
   # "real" model attributes about who we are and stuff  
   attr_reader :name
@@ -25,26 +25,30 @@ class Npc
     @dead = false
   end
   
-  def update_event(event)
-    @event = event
-    # set @event up correctly with graphics, speed, etc.
+  # set event up correctly with graphics, speed, etc. so it looks like us
+  def update_event(event)    
+    @event = event    
     @event.set_graphic(@spritesheet_file, @spritesheet_index)    
     @event.move_speed = @move_speed
     @event.move_frequency = @move_frequency
     @event.npc = self
+    
+    if @dead == true
+      # show death
+      sheet_num = @spritesheet_file[5, @spritesheet_file.length].to_i # the "2" in "Actor2"
+      index = (@spritesheet_index / 4) + (2 * (sheet_num - 1))    
+      @event.set_graphic(@death_spritesheet, index)
+      # 2 = down, 4 = left, 6 = right, 8 = up
+      # direction is used to pick the right sprite on the Damage/Behavior spritesheets
+      @event.set_direction 2 * ((@spritesheet_index % 4) + 1)    
+      @event.stop_walking
+      @event.animation_frame = 0 # the most dead-looking.
+    end
   end
   
   def die
     @dead = true
-    # show death
-    sheet_num = @spritesheet_file[5, @spritesheet_file.length].to_i # the "2" in "Actor2"
-    index = (@spritesheet_index / 4) + (2 * (sheet_num - 1))    
-    @event.set_graphic(@death_spritesheet, index)
-    # 2 = down, 4 = left, 6 = right, 8 = up
-    # direction is used to pick the right sprite on the Damage/Behavior spritesheets
-    @event.set_direction 2 * ((@spritesheet_index % 4) + 1)    
-    @event.stop_walking
-    @event.animation_frame = 0 # the most dead-looking.
+    update_event(@event) unless @event.nil?    
   end  
   
   def talk    

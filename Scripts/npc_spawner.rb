@@ -15,8 +15,7 @@ require 'scripts/spawn_events'
 require 'scripts/models/npc'
 
 class NpcSpawner  
-  def self.create_npc
-    npc = Npc.new
+  def self.spawn(npc)    
     events = Game_Map::instance.events    
     # Clone the event into a random spot
     location = Game_Map::instance.find_random_empty_spot      
@@ -26,28 +25,4 @@ class NpcSpawner
     npc.update_event(event)
     return npc
   end  
-end
-
-# Used to set event direction, move speed and frequency (extends RPG Maker class)
-class Game_Event
-  # Access via scripts on an event, eg. $game_map.events[self.event_id].npc
-  attr_accessor :npc
-  
-  # These two are used to randomize event speed
-  def move_speed=(value)
-    @move_speed = value
-  end
-  def move_frequency=(value)
-    @move_frequency = value
-  end
-  
-  def stop_walking
-    @move_type = 0 # stop moving
-    @direction_fix = true # don't change direction if talked to    
-  end
-  
-  # 0, 1, or 2 for first, second, or third frame
-  def animation_frame=(value)
-    @pattern = @original_pattern = value
-  end
 end

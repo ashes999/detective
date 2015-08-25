@@ -1,6 +1,6 @@
 class NameGenerator
   
-  @@characters = ['a', 'ka', 'ma', 'sa', 'hi', 'ho', 'he', 'hy', 'am', 'at', 'ar', 'th', 'pa', 'po']
+  @@characters = ['a', 'ka', 'ma', 'sa', 'hi', 'ho', 'he', 'hy', 'am', 'at', 'ar', 't', 'pa', 'po', 'he', 'te', 'ta', 'ti', 'to', 'tu']
   @@names_used = []
   
   def self.generate_name

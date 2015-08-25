@@ -17,38 +17,15 @@ require 'scripts/models/npc'
 class NpcSpawner  
   def self.create_npc
     npc = Npc.new
-    events = $game_map.events    
+    events = Game_Map::instance.events    
     # Clone the event into a random spot
-    location = find_random_empty_spot      
+    location = Game_Map::instance.find_random_empty_spot      
     template_id = npc.template_id
-    $game_map.spawn_event(location[:x], location[:y], template_id, DATA_MAP_ID)          
+    Game_Map::instance.spawn_event(location[:x], location[:y], template_id, DATA_MAP_ID)          
     event = events[events.keys[-1]]    
     npc.update_event(event)
     return npc
-  end
-  
-  private
-  
-  # Finds an empty spot. See is_empty? below.
-  def self.find_random_empty_spot
-    x = rand($game_map.width)
-    y = rand($game_map.height)    
-    
-    while !is_empty?(x, y)      
-      x = rand($game_map.width)
-      y = rand($game_map.height)
-    end    
-    
-    return {:x => x, :y => y}
-  end
-  
-  # Returns true if the tile has no events on it.
-  def self.is_empty?(x, y)
-    event_count = $game_map.events_xy(x, y).length  
-    # Is it a floor tile? That's all we need.
-    #return tile_type($game_map.data[x, y, 0]) == @floor_id && event_count == 0
-    return event_count == 0
-  end
+  end  
 end
 
 # Used to set event direction, move speed and frequency (extends RPG Maker class)

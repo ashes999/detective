@@ -13,6 +13,7 @@ class DetectiveGame
   # TODO: this is updated by hand :(
   # These are the names of ITEMS in the DB.
   POTENTIAL_MURDER_WEAPONS = ['Sword', 'Pickaxe', 'Vase', 'Pot', 'Shovel']
+  HOUSES = (1..8).to_a.map { |x| "House#{x}"} + ['Mansion1']
 
   # The key for storing this game's data in our save-game.
   DATA_KEY = :detective_game
@@ -20,7 +21,7 @@ class DetectiveGame
 
   @@instance = nil
   
-  def self.instance
+  def self.instance    
     @@instance = DataManager.get(DATA_KEY) || DetectiveGame.new    
     return @@instance
   end

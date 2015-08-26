@@ -15,8 +15,9 @@ class DetectiveGame
   POTENTIAL_MURDER_WEAPONS = ['Sword', 'Pickaxe', 'Vase', 'Pot', 'Shovel']
   
   # Potential maps to spawn on. Names don't cut it (not accessible through the API), so we use map IDs.
-  # 7-14 are House1-House8; 1 = Mansion1
-  HOUSES = (7..14).to_a + [1]
+  # 7-14 are House1-House8
+  MANSION_MAP_ID = 1 # Mansion1
+  NPC_MAPS = (7..14).to_a + [MANSION_MAP_ID]
 
   # The key for storing this game's data in our save-game.
   DATA_KEY = :detective_game
@@ -82,7 +83,11 @@ Use the Profiles screen to view suspect profiles.'
         Game_Interpreter.instance.game_over
       end
     end
-  end  
+  end
+  
+  def spawn_this_maps_npcs
+    @npcs.each { |n| NpcSpawner.spawn(n) if n.map_id == Game_Map::instance.map_id  }
+  end
   
   private  
   
@@ -106,7 +111,9 @@ Use the Profiles screen to view suspect profiles.'
     @npcs = []
     
     num_npcs.times do
-      @npcs << Npc.new
+      map_id = NPC_MAPS.sample
+      @npcs << Npc.new(map_id)
+      Logger.log("#{@npcs[-1].name} is on map #{map_id}")
     end
   end
   
@@ -132,6 +139,7 @@ Use the Profiles screen to view suspect profiles.'
     @victim = @killer
     @victim = npcs.sample while @victim == @killer
     @victim.die
+    @victim.map_id = MANSION_MAP_ID
     
     non_victims = @npcs - [@victim]
     non_killers = non_victims - [@killer]

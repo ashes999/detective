@@ -37,6 +37,7 @@ class Game_Map
    ###
   # Returns true if the tile (all layers) is passable in all four directions.
   # Should technically be called is_not_impassible?, but that's a double negative.
+  # TODO: use passable?(x, y, d) instead.
   ###
   def is_passable?(x, y)
     # http://rgss3.wiki.fc2.com/wiki/$game_map.check_passage%2528)

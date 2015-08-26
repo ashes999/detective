@@ -17,9 +17,14 @@ require 'scripts/models/npc'
 class NpcSpawner  
   def self.spawn(npc)    
     events = Game_Map::instance.events    
-    # Clone the event into a random spot
-    location = Game_Map::instance.find_random_empty_spot      
     template_id = npc.template_id
+    
+    # Clone the event into a random spot, unless we saved their spot with the remember_event_position script.    
+    if npc.x.nil? || npc.y.nil?
+      location = Game_Map::instance.find_random_empty_spot
+    else
+      location = { :x => npc.x, :y => npc.y }
+    end    
     Game_Map::instance.spawn_event(location[:x], location[:y], template_id, DATA_MAP_ID)          
     event = events[events.keys[-1]]    
     npc.update_event(event)

@@ -1,7 +1,9 @@
 require 'scripts/logger'
 require 'scripts/npc_spawner'
+require 'scripts/name_generator'
 require 'scripts/ui/profiles_scene'
 require 'scripts/models/notebook'
+require 'scripts/models/suspect_npc'
 require 'scripts/api/vxace_api'
 require 'scripts/utils/external_data'
 
@@ -112,7 +114,8 @@ Use the Profiles screen to view suspect profiles.'
     
     num_npcs.times do
       map_id = NPC_MAPS.sample
-      @npcs << Npc.new(map_id)
+      name = NameGenerator::generate_name
+      @npcs << SuspectNpc.new(map_id, name)
       Logger.log("#{@npcs[-1].name} is on map #{map_id}")
     end
   end

@@ -1,6 +1,5 @@
-require 'scripts/name_generator'
-
 # A wrapper around the RPG Maker event. It exposes some properties and stuff, and methods like die.
+# It also has a name, which is randomly generated. Yes, really.
 class Npc
   
   # attributes we need to physically appear on-screen properly and walk around
@@ -10,22 +9,19 @@ class Npc
   # "real" model attributes about who we are and stuff
   attr_reader :name
   
-  # specific to the detective game
-  attr_accessor :alibi_person, :map_id  
-  
   # move_speed = 1-6
   # move_frequency = 1-5
   # spritesheet_file is the filename used for the graphic, eg. Actor1.
   # spritesheet_index is the base 0 index (0-7; first row, then second row)
   # template_id is the ID of the event we're copying, on map with ID=DATA_MAP_ID
-  def initialize(map_id, spritesheet_file = nil, spritesheet_index = nil, template_id = nil, npc_speed = nil, npc_frequency = nil)
+  def initialize(name, spritesheet_file = nil, spritesheet_index = nil, template_id = nil, npc_speed = nil, npc_frequency = nil)
     @spritesheet_file = spritesheet_file || SPRITESHEETS.sample
     @spritesheet_index = spritesheet_index || rand(8) # 8 indicies/characters per graphic
     @template_id = template_id || NPC_TEMPLATE_IDS.sample
     @move_speed = move_speed || NPC_SPEEDS.sample
     @move_frequency = move_frequency || NPC_FREQUENCIES.sample    
     @death_spritesheet = @spritesheet_file == 'Actor1' || @spritesheet_file == 'Actor2' ? DEATH_SPRITESHEETS[0] : UNKNOWN    
-    @name = NameGenerator::generate_name
+    @name = name
     @map_id = map_id
     @dead = false
   end
@@ -58,11 +54,7 @@ class Npc
   end  
   
   def talk    
-    if @dead
-      message = "#{@name} is dead ..."
-    else
-      message = "#{@name}: I was with #{@alibi_person.name} all day."
-    end
+    message = 'Hi.'
     Game_Interpreter.instance.show_message(message)
     DetectiveGame::instance.notebook.note(message)
   end

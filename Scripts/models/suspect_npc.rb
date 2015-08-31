@@ -3,9 +3,10 @@ require 'scripts/models/npc'
 
 # A wrapper around the RPG Maker event. It exposes some properties and stuff, and methods like die.
 class SuspectNpc < Npc
+    
+  attr_accessor :alibi_person, :map_id, :age, :profession
   
-  # specific to the detective game
-  attr_accessor :alibi_person, :map_id  
+  NPC_PROFESSIONS = ['tailor', 'programmer', 'accountant', 'business analyst', 'personal trainer', 'CEO', 'teacher', 'cop', 'journalist']
   
   # move_speed = 1-6
   # move_frequency = 1-5
@@ -14,7 +15,11 @@ class SuspectNpc < Npc
   # template_id is the ID of the event we're copying, on map with ID=DATA_MAP_ID
   def initialize(map_id, name, spritesheet_file = nil, spritesheet_index = nil, template_id = nil, npc_speed = nil, npc_frequency = nil)
     super(name, spritesheet_file, spritesheet_index, template_id, npc_speed, npc_frequency)
-    @map_id = map_id    
+    @map_id = map_id
+    
+    # basic facts
+    @profession = NPC_PROFESSIONS.sample
+    @age = 20 + rand(20)
   end
  
   def talk    
@@ -25,5 +30,9 @@ class SuspectNpc < Npc
     end
     Game_Interpreter.instance.show_message(message)
     DetectiveGame::instance.notebook.note(message)
+  end
+  
+  def profile
+    return "#{@name} is a #{@age} year-old #{@profession}."
   end
 end

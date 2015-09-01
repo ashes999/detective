@@ -6,7 +6,8 @@ class SuspectNpc < Npc
     
   attr_accessor :alibi_person, :map_id, :age, :profession
   
-  NPC_PROFESSIONS = ['tailor', 'programmer', 'accountant', 'business analyst', 'personal trainer', 'CEO', 'teacher', 'cop', 'journalist']
+  NPC_PROFESSIONS = ['janitor', 'programmer', 'accountant', 'business analyst', 'personal trainer', 'CEO', 'teacher', 'cop', 'journalist']
+  BLOOD_TYPES = ['A', 'B', 'AB', 'O']
   
   # move_speed = 1-6
   # move_frequency = 1-5
@@ -19,7 +20,8 @@ class SuspectNpc < Npc
     
     # basic facts
     @profession = NPC_PROFESSIONS.sample
-    @age = 20 + rand(20)
+    @blood_type = BLOOD_TYPES.sample
+    @age = 20 + rand(15)    
   end
  
   def talk    
@@ -33,6 +35,6 @@ class SuspectNpc < Npc
   end
   
   def profile
-    return "#{@name} is a #{@age} year-old #{@profession}."
+    return "#{@name} is a #{@age} year-old #{@profession} with blood type #{@blood_type}."
   end
 end

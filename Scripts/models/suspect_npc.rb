@@ -6,12 +6,6 @@ class SuspectNpc < Npc
     
   attr_accessor :alibi_person, :map_id, :age, :profession
   
-  NPC_PROFESSIONS = ['janitor', 'programmer', 'accountant', 'business analyst', 'personal trainer', 'CEO', 'teacher', 'cop', 'journalist']
-  BLOOD_TYPES = ['A', 'B', 'AB', 'O']
-  NEGLIBLE_CRIMES = ['petty theft', 'shoplifting', 'vandalism', 'breaking and entering']
-  MINOR_CRIMES = ['extortion', 'assault', 'robbery', 'embezzlement', 'substance abuse']
-  MAJOR_CRIMES = ['armed robbery', 'homicide', 'kidnapping', 'arson', 'child abuse']
-  
   # move_speed = 1-6
   # move_frequency = 1-5
   # spritesheet_file is the filename used for the graphic, eg. Actor1.
@@ -23,7 +17,7 @@ class SuspectNpc < Npc
     
     # basic facts
     @age = 20 + rand(15)    
-    @profession = NPC_PROFESSIONS.sample
+    @profession = ExternalData::instance.get(:professions).sample
     @blood_type = pick_blood_type
     @criminal_record = generate_criminal_record
   end
@@ -58,9 +52,9 @@ class SuspectNpc < Npc
   def generate_criminal_record
     severity = rand(100)
     # 30% nothing, 30% mild, 25% medium, 15% severe
-    return "#{@name} has no prior criminal record" if severity < 30
-    return "#{@name}'s criminal record contains a few counts of #{NEGLIBLE_CRIMES.sample}" if severity < 60
-    return "#{@name} served a short jail sentence for #{MINOR_CRIMES.sample}" if severity < 85
-    return "#{@name} served several years of combined jail time for #{MAJOR_CRIMES.sample(2).join(' and ')}" # >= 85
+    return "#{@name} has no prior criminal record." if severity < 30
+    return "#{@name}'s criminal record contains a few counts of #{ExternalData::instance.get(:negligible_crimes).sample}." if severity < 60
+    return "#{@name} served a short jail sentence for #{ExternalData::instance.get(:minor_crimes).sample}." if severity < 85
+    return "#{@name} served several years of combined jail time for #{ExternalData::instance.get(:major_crimes).sample(2).join(' and ')}." # >= 85
   end
 end

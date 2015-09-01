@@ -19,9 +19,9 @@ class SuspectNpc < Npc
     @map_id = map_id
     
     # basic facts
-    @profession = NPC_PROFESSIONS.sample
-    @blood_type = BLOOD_TYPES.sample
     @age = 20 + rand(15)    
+    @profession = NPC_PROFESSIONS.sample
+    @blood_type = pick_blood_type    
   end
  
   def talk    
@@ -36,5 +36,17 @@ class SuspectNpc < Npc
   
   def profile
     return "#{@name} is a #{@age} year-old #{@profession} with blood type #{@blood_type}."
+  end
+  
+  private
+  
+  def pick_blood_type
+    # Based on culmulative distribution from http://www.redcrossblood.org/learn-about-blood/blood-types
+    # O: 48% A: 31% B: 16% AB: 4%    
+    blood_picked = rand(100)
+    return 'O' if blood_picked < 48
+    return 'A' if blood_picked < 48 + 31
+    return 'B' if blood_picked < 48 + 31 + 16
+    return 'AB'
   end
 end

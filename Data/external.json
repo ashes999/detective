@@ -9,5 +9,5 @@
     "major_crimes": ["armed robbery", "homicide", "kidnapping", "arson", "terrorism"],
     "social_media_sites": ["Google+", "Facebook", "Twitter", "Tumblr"],
     "social_media_frequencies": ["rarely", "occasionally", "frequently", "incessantly"],
-    "social_media_topics": ["music", "television", "software", "religion", "books", "business", "food", "holidays", "internet", "sports"]
+    "social_media_topics": ["gaming", "television", "software", "religion", "books", "business", "food", "holidays", "internet", "sports"]
 }

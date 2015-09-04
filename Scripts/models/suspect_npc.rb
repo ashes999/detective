@@ -4,7 +4,7 @@ require 'scripts/models/npc'
 # A wrapper around the RPG Maker event. It exposes some properties and stuff, and methods like die.
 class SuspectNpc < Npc
     
-  attr_accessor :alibi_person, :map_id, :age, :profession
+  attr_accessor :map_id, :age, :profession
   
   # move_speed = 1-6
   # move_frequency = 1-5
@@ -20,21 +20,35 @@ class SuspectNpc < Npc
     @profession = ExternalData::instance.get(:professions).sample
     @blood_type = pick_blood_type
     @criminal_record = generate_criminal_record
-    @social_media_profile = generate_social_media_profile
+    @social_media = generate_social_media_profile
+    @messages = [      
+      "I like #{@social_media[:post_topic]}!",
+      "Isn't it #{['strange', 'scary', 'sad', 'unfortunate'].sample}, what happened?",
+      "The weather today #{['sucks', 'rocks', 'is okay', 'bothers me', 'confuses me'].sample}."
+    ]
   end
  
   def talk    
     if @dead
       message = "#{@name} is dead ..."
     else
-      message = "#{@name}: I was with #{@alibi_person.name} all day."
+      message = "#{@name}: #{@messages.sample}"
     end
     Game_Interpreter.instance.show_message(message)
     DetectiveGame::instance.notebook.note(message)
   end
   
   def profile
-    return "#{@name} is a #{@age} year-old #{@profession} with blood type #{@blood_type}.\n#{@criminal_record}\n#{@social_media_profile}"
+    return "#{@name} is a #{@age} year-old #{@profession} with blood type #{@blood_type}.\n#{@criminal_record}\n#{@social_media[:profile]}"
+  end
+  
+  def alibi_person
+    return @alibi_person
+  end
+  
+  def alibi_person=(person)
+    @alibi_person = person
+    @messages << "I was with #{@alibi_person.name} all day."    
   end
   
   private
@@ -65,6 +79,11 @@ class SuspectNpc < Npc
     num_friends = rand(50) + 50
     post_frequency = data.get(:social_media_frequencies).sample
     post_topic = data.get(:social_media_topics).sample
-    return "#{@name} has #{num_friends} friends on #{site} and #{post_frequency} posts about #{post_topic}."
+    return {
+      :site => site,
+      :num_friends => num_friends,      
+      :post_topic => post_topic,
+      :profile => "#{@name} has #{num_friends} friends on #{site} and #{post_frequency} posts about #{post_topic}."
+    }
   end
 end

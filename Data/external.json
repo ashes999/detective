@@ -6,5 +6,8 @@
     "professions": ["janitor", "programmer", "accountant", "business analyst", "personal trainer", "CEO", "teacher", "cop", "journalist"],    
     "negligible_crimes": ["petty theft", "shoplifting", "vandalism", "breaking and entering"],
     "minor_crimes": ["extortion", "assault", "robbery", "embezzlement", "substance abuse"],
-    "major_crimes": ["armed robbery", "homicide", "kidnapping", "arson", "child abuse"]
+    "major_crimes": ["armed robbery", "homicide", "kidnapping", "arson", "terrorism"],
+    "social_media_sites": ["Google+", "Facebook", "Twitter", "Tumblr"],
+    "social_media_frequencies": ["rarely", "occasionally", "frequently", "incessantly"],
+    "social_media_topics": ["music", "television", "software", "religion", "books", "business", "food", "holidays", "internet", "sports"]
 }

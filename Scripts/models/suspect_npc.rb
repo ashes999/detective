@@ -48,7 +48,11 @@ class SuspectNpc < Npc
   
   def alibi_person=(person)
     @alibi_person = person
-    @messages << "I was with #{@alibi_person.name} all day."    
+    if person.nil?
+      @messages << 'I was alone all night.'
+    else
+      @messages << "I was with #{@alibi_person.name} all day."    
+    end
   end
   
   private

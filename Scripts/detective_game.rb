@@ -27,12 +27,17 @@ class DetectiveGame
 
   @@instance = nil
   
-  def self.instance    
-    @@instance = DataManager.get(DATA_KEY) || DetectiveGame.new    
+  def self.instance
+    @@instance = DataManager.get(DATA_KEY) || DetectiveGame.new  
     return @@instance
   end
   
   def initialize
+    Logger.log('---------------------------------------------------')
+    Logger.log('New game started')
+    @debug = ExternalData::instance.get(:debug)
+    debug 'Debug mode enabled.'
+    
     difficulty = ExternalData::instance.get(:difficulty)
     raise "Difficulty (#{difficulty}) should be in the range of 1-10" if difficulty < 1 || difficulty > 10
     
@@ -120,37 +125,57 @@ Use the Profiles screen to view suspect profiles.'
     end
   end
   
-  # Consider evidence as the thing the player seeks (statements and forensics)
-  #
-  # "Signal" is the minimum number of pieces of evidence you need to solve this
-  # "Noise" is any other evidence that's not signal
-  # Difficulty is the metric of how many "signals" you need to solve the case.
-  #
-  # In Sleuth, you have 3 signal people (two people who's alibis match and an odd man out),
-  # and 2 noise people. There are also seven items to look at, one of which is the murder weapon.
-  # That brings us to a total of 3 + 1 => 4 signals.
-  #
-  # Easiest difficulty is three people (A => B, B => A, C => A) + 1 item
-  # Keep it simple, and linear; d1 = 3, d10 = 13 (~3x harder)
-  # m = 0.5, num_signals = difficulty + 3. Simple, and clean.
-  # 
-  # To scale difficulty, we do the following:
-  #   - 1-3 bloody items (gotta scan all to figure out which is it)
-  #   - 
-  def generate_scenario(difficulty)
+  # Signals: things that indicate that a person is the murderer
+  # The number of signals is 3 + (2 * difficulty), distributed
+  # randomly to NPCs. (The killer gets more signals.)
+  def generate_scenario(difficulty)    
+    debug "Difficulty: #{difficulty}"
     @killer = @npcs.sample
     @victim = @killer
     @victim = npcs.sample while @victim == @killer
     @victim.die
     @victim.map_id = MANSION_MAP_ID
+    Logger.log "Victim: #{@victim.name}"
+    debug "Killer: #{@killer.name}"
     
     non_victims = @npcs - [@victim]
     non_killers = non_victims - [@killer]
         
     non_killers.shuffle!
     
-    num_signals = 3 + difficulty
-    @killer.alibi_person = non_killers.sample
+    num_signals = 3 + (2 * difficulty)
+    # 1-3 more signals than the average
+    killer_num_signals = (num_signals / @npcs.count) + rand(2) + 2
+    # % chance of having a strong alibi as the killer
+    strong_alibi = rand(100) <= ExternalData::instance.get(:strong_alibi_probability)
+    debug " Killer's alibi is strong? #{strong_alibi} -- they have #{killer_num_signals} out of #{num_signals} signals"
+    debug "Non-killers: #{non_killers.collect {|n| n.name}}"
+    
+    if (strong_alibi)
+      num_signals -= 1
+      # Make a pair, or a "ring" of three people who were together
+      # 40% chance to be a ring
+      make_ring = true if rand(100) <= 40
+      if make_ring
+        n1 = non_killers.pop
+        n2 = non_killers.pop        
+        n1.alibi_person = n2
+        n2.alibi_person = @killer
+        @killer.alibi_person = n1
+        debug "Killer uses a ring-type alibi: #{@killer.name}, #{n1.name}, #{n2.name}}"
+      elsif rand(100) <= ExternalData::instance.get(:alone_alibi_probability)
+        debug 'Killer claims to be alone as their alibi.'
+        @killer.alibi_person = nil
+      else
+        alibi = non_killers.pop
+        @killer.alibi_person = alibi
+        alibi.alibi_person = @killer
+        debug "Killer has a mutual alibi with #{alibi.name}"
+      end
+    else      
+      @killer.alibi_person = non_killers.sample
+      debug "Killer has an obvious alibi which #{@killer.alibi_person.name} will not verify"
+    end
     
     # Pick two random people and link their alibis
     # To deal with odd numbers, make a trio
@@ -159,19 +184,36 @@ Use the Profiles screen to view suspect profiles.'
       n2 = non_killers.pop
       
       if non_killers.size % 2 == 1
-        n3 = non_killers.pop
-        n1.alibi_person = n2
-        n2.alibi_person = n3
-        n3.alibi_person = n1
+        if rand(100) <= ExternalData::instance.get(:alone_alibi_probability)
+          n1.alibi_person = n2
+          n2.alibi_person = n1
+          debug "Alibi: #{n1.name} <=> #{n2.name}"
+          n3 = non_killers.pop
+          n3.alibi_person = nil
+          debug "Alibi: #{n3.name} was alone"
+        else
+          # ring alibi
+          n3 = non_killers.pop
+          n1.alibi_person = n2
+          n2.alibi_person = n3
+          n3.alibi_person = n1
+          debug "Alibi: Ring of [#{n1.name}, #{n2.name}, #{n3.name}]"
+        end
       else
+        debug "Alibi: #{n1.name} <=> #{n2.name}"
         n1.alibi_person = n2
         n2.alibi_person = n1
       end
     end
     
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
+    debug "Murder weapon: #{@murder_weapon}"
   end
   
   private
+  
+  def debug(message)
+    Logger.log(message) if @debug == true
+  end
   
 end

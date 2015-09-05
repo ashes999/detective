@@ -43,13 +43,14 @@ class DetectiveGame
     
     min_npcs = ExternalData::instance.get(:min_number_of_npcs)
     max_npcs = ExternalData::instance.get(:max_number_of_npcs)
-    range = max_npcs - min_npcs
+    range = max_npcs - min_npcs    
     
     # map [1..10] to [0..range] (uniform distribution)
     # difficulty of 1 = min_npcs, difficulty of 10 = max_npcs    
     num_npcs = (range * difficulty / 10.0).round    
-    num_npcs = rand(range) + min_npcs            
-  
+    num_npcs = rand(range) + min_npcs
+    debug "Generating #{num_npcs} npcs; range was #{min_npcs} to #{max_npcs}"
+    
     generate_npcs(num_npcs)
     generate_scenario(difficulty) 
     
@@ -117,7 +118,7 @@ class DetectiveGame
       map_id = NPC_MAPS.sample
       name = NameGenerator::generate_name
       @npcs << SuspectNpc.new(map_id, name)
-      Logger.log("#{@npcs[-1].name} is on map #{map_id}")
+      debug "#{@npcs[-1].name} is on map #{map_id}"
     end
   end
   
@@ -142,7 +143,7 @@ class DetectiveGame
     num_signals = 3 + (2 * difficulty)
     signal_counts = {}
     
-    num_signals.times do |i|
+    num_signals.times do
       npc = non_victims.sample
       npc.signal_count += 1      
     end
@@ -156,19 +157,26 @@ class DetectiveGame
       end
     end
     
-    # Make sure nobody ties with us. Always be one more.
+    # Make sure nobody ties with us. Always be one more. TODO: the killer 
+    # shouldn't necessarily have more signals, but you should be able to
+    # rule out people with more signals or better signals than him/her.
     @killer.signal_count += 1
     debug "Signal distribution: #{non_victims}"
+    non_victims.each { |n| n.augment_profile }
+    @victim.signal_count = rand(2) # 0 or 1 signal
+    @victim.augment_profile
     
-    generate_alibis(non_killers)    
+    # Everyone needs an alibi. Weak alibis consume one signal.
+    generate_killers_alibi(non_killers)
+    generate_alibis(non_killers)
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
     debug "Murder weapon: #{@murder_weapon}"
   end
   
   private
   
-  def generate_alibis(non_killers)  
-    # % chance of having a strong alibi as the killer
+  def generate_killers_alibi(non_killers)
+  # % chance of having a strong alibi as the killer
     strong_alibi = rand(100) <= ExternalData::instance.get(:strong_alibi_probability)
     debug " Killer's alibi is strong? #{strong_alibi}"
     debug "Non-killers: #{non_killers.collect {|n| n.name}}"
@@ -198,7 +206,9 @@ class DetectiveGame
       @killer.alibi_person = non_killers.sample
       debug "Killer has an obvious alibi which #{@killer.alibi_person.name} will not verify"
     end
-    
+  end
+  
+  def generate_alibis(non_killers)  
     # Pick two random people and link their alibis
     # To deal with odd numbers, make a trio
     while non_killers.size > 0 do

@@ -1,15 +1,18 @@
 {
     "debug": true
-    "difficulty": 6,
+    "difficulty": 1,
     "min_number_of_npcs": 5,
     "max_number_of_npcs": 7,
+    
     "strong_alibi_probability": 30,
     "ring_alibi_probability": 40,
     "alone_alibi_probability": 30,    
+    
     "professions": ["janitor", "programmer", "accountant", "business analyst", "personal trainer", "CEO", "teacher", "cop", "journalist"],    
     "negligible_crimes": ["petty theft", "shoplifting", "vandalism", "breaking and entering"],
     "minor_crimes": ["extortion", "assault", "robbery", "embezzlement", "substance abuse"],
     "major_crimes": ["armed robbery", "homicide", "kidnapping", "arson", "terrorism"],
+    
     "social_media_sites": ["Google+", "Facebook", "Twitter", "Tumblr"],
     "social_media_frequencies": ["rarely", "occasionally", "frequently", "incessantly"],
     "social_media_topics": ["gaming", "television", "software", "religion", "books", "business", "food", "holidays", "the internet", "sports"]

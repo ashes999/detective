@@ -21,14 +21,11 @@ class SuspectNpc < Npc
     @age = 20 + rand(15)    
     @profession = ExternalData::instance.get(:professions).sample
     @blood_type = pick_blood_type
-    @criminal_record = generate_criminal_record
-    @social_media = generate_social_media_profile
+    @signal_count = 0    
     @messages = [      
-      "I like #{@social_media[:post_topic]}!",
       "Isn't it #{['strange', 'scary', 'sad', 'unfortunate'].sample}, what happened?",
       "The weather today #{['sucks', 'rocks', 'is okay', 'bothers me', 'confuses me'].sample}."
-    ]
-    @signal_count = 0
+    ]    
   end
  
   def talk    
@@ -53,12 +50,19 @@ class SuspectNpc < Npc
   end
   
   def alibi_person=(person)
+    time_of_day = ['day', 'afternoon', 'night'].sample
     @alibi_person = person
     if person.nil?
-      @messages << 'I was alone all night.'
+      @messages << "I was alone all #{time_of_day}."
     else
-      @messages << "I was with #{@alibi_person.name} all day."    
+      @messages << "I was with #{@alibi_person.name} all #{time_of_day}."
     end
+  end
+  
+  def augment_profile
+    @criminal_record = generate_criminal_record
+    @social_media = generate_social_media_profile
+    @messages << "I like #{@social_media[:post_topic]}!"
   end
   
   private
@@ -77,10 +81,13 @@ class SuspectNpc < Npc
   def generate_criminal_record
     severity = rand(100)
     # 30% nothing, 30% mild, 25% medium, 15% severe
-    return "#{@name} has no prior criminal record." if severity < 30
+    return "#{@name} has no prior criminal record." if severity < 30 || @signal_count == 0
     return "#{@name}'s criminal record contains a few counts of #{ExternalData::instance.get(:negligible_crimes).sample}." if severity < 60
+    
+    # Suspicious criminal record = 1 signal
+    @signal_count -= 1
     return "#{@name} served a short jail sentence for #{ExternalData::instance.get(:minor_crimes).sample}." if severity < 85
-    return "#{@name} served several years of combined jail time for #{ExternalData::instance.get(:major_crimes).sample(2).join(' and ')}." # >= 85
+    return "#{@name} served several years of combined jail time for #{ExternalData::instance.get(:major_crimes).sample(2).join(' and ')}."
   end
   
   def generate_social_media_profile

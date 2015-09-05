@@ -24,6 +24,10 @@ class ExternalData
     return @@instance
   end
   
+  def key?(key)
+    return @externs.key?(key.to_sym)
+  end
+  
   def get(key)
     key = key.to_sym
     raise "#{key} isn't a valid extern; did you mean one of: #{@externs.keys}" unless @externs.key?(key)

@@ -34,7 +34,15 @@ class DetectiveGame
   
   def initialize
     Logger.log('---------------------------------------------------')
-    Logger.log('New game started')
+    
+    if ExternalData::instance.key?(:universe)
+      seed = ExternalData::instance.get(:universe) 
+    else
+      seed = srand()
+    end
+    srand(seed)
+    Logger.log "New game started in universe ##{seed}"
+    
     @debug = ExternalData::instance.get(:debug)
     debug 'Debug mode enabled.'
     

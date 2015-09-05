@@ -59,6 +59,8 @@ class SuspectNpc < Npc
     end
   end
   
+  # These are the things that may consume signals, so do them after we know how
+  # many signals each NPC has.
   def augment_profile
     @criminal_record = generate_criminal_record
     @social_media = generate_social_media_profile
@@ -93,7 +95,15 @@ class SuspectNpc < Npc
   def generate_social_media_profile
     data = ExternalData::instance
     site = data.get(:social_media_sites).sample
-    num_friends = rand(50) + 50
+    
+    if (@signal_count > 0 && rand(100) < 50)
+    # having few social connection is a signal
+      num_friends = rand(15) + 15
+      @signal_count -= 1
+    else
+      num_friends = rand(50) + 50
+    end
+    
     post_frequency = data.get(:social_media_frequencies).sample
     post_topic = data.get(:social_media_topics).sample
     return {

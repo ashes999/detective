@@ -144,15 +144,32 @@ Use the Profiles screen to view suspect profiles.'
     non_killers.shuffle!
     
     num_signals = 3 + (2 * difficulty)
-    # 1-3 more signals than the average
-    killer_num_signals = (num_signals / @npcs.count) + rand(2) + 2
+    signal_counts = {}
+    
+    num_signals.times do |i|
+      npc = non_victims.sample
+      npc.signal_count += 1      
+    end
+    
+    # For now, the killer has the most signals. Swap.
+    non_victims.each do |n|
+      if n.signal_count > @killer.signal_count
+        temp = @killer.signal_count        
+        @killer.signal_count = n.signal_count
+        n.signal_count = temp
+      end
+    end
+    
+    # Make sure nobody ties with us. Always be one up.
+    @killer.signal_count += 1
+    debug "Signal distribution: #{non_victims}"
+    
     # % chance of having a strong alibi as the killer
     strong_alibi = rand(100) <= ExternalData::instance.get(:strong_alibi_probability)
-    debug " Killer's alibi is strong? #{strong_alibi} -- they have #{killer_num_signals} out of #{num_signals} signals"
+    debug " Killer's alibi is strong? #{strong_alibi}"
     debug "Non-killers: #{non_killers.collect {|n| n.name}}"
     
-    if (strong_alibi)
-      num_signals -= 1
+    if (strong_alibi)      
       # Make a pair, or a "ring" of three people who were together
       # 40% chance to be a ring
       make_ring = true if rand(100) <= 40
@@ -172,7 +189,8 @@ Use the Profiles screen to view suspect profiles.'
         alibi.alibi_person = @killer
         debug "Killer has a mutual alibi with #{alibi.name}"
       end
-    else      
+    else
+      @killer.signal_count -= 1 # weak alibi: one indicator
       @killer.alibi_person = non_killers.sample
       debug "Killer has an obvious alibi which #{@killer.alibi_person.name} will not verify"
     end
@@ -190,6 +208,7 @@ Use the Profiles screen to view suspect profiles.'
           debug "Alibi: #{n1.name} <=> #{n2.name}"
           n3 = non_killers.pop
           n3.alibi_person = nil
+          n3.signal_count -= 1
           debug "Alibi: #{n3.name} was alone"
         else
           # ring alibi

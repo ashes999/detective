@@ -4,7 +4,9 @@ require 'scripts/models/npc'
 # A wrapper around the RPG Maker event. It exposes some properties and stuff, and methods like die.
 class SuspectNpc < Npc
     
-  attr_accessor :map_id, :age, :profession
+  # signal_count: the number of signals (suspicious information) that this person is the killer.
+  # Starts set to some value, and decreases every time we actualize a signal (eg. create weak alibi)
+  attr_accessor :map_id, :age, :profession, :signal_count
   
   # move_speed = 1-6
   # move_frequency = 1-5
@@ -26,6 +28,7 @@ class SuspectNpc < Npc
       "Isn't it #{['strange', 'scary', 'sad', 'unfortunate'].sample}, what happened?",
       "The weather today #{['sucks', 'rocks', 'is okay', 'bothers me', 'confuses me'].sample}."
     ]
+    @signal_count = 0
   end
  
   def talk    
@@ -89,5 +92,9 @@ class SuspectNpc < Npc
       :post_topic => post_topic,
       :profile => "#{@name} has #{num_friends} friends on #{site} and #{post_frequency} posts about #{post_topic}."
     }
+  end
+  
+  def to_s
+    return "#{@name}: #{@signal_count}"
   end
 end

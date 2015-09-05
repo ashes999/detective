@@ -4,9 +4,9 @@ require 'scripts/models/npc'
 # A wrapper around the RPG Maker event. It exposes some properties and stuff, and methods like die.
 class SuspectNpc < Npc
     
-  # signal_count: the number of signals (suspicious information) that this person is the killer.
+  # evidence_count: the number of signals (suspicious information) that this person is the killer.
   # Starts set to some value, and decreases every time we actualize a signal (eg. create weak alibi)
-  attr_accessor :map_id, :age, :profession, :signal_count
+  attr_accessor :map_id, :age, :profession, :evidence_count
   
   # move_speed = 1-6
   # move_frequency = 1-5
@@ -21,7 +21,7 @@ class SuspectNpc < Npc
     @age = 20 + rand(15)    
     @profession = ExternalData::instance.get(:professions).sample
     @blood_type = pick_blood_type
-    @signal_count = 0    
+    @evidence_count = 0    
     @messages = [      
       "Isn't it #{['strange', 'scary', 'sad', 'unfortunate'].sample}, what happened?",
       "The weather today #{['sucks', 'rocks', 'is okay', 'bothers me', 'confuses me'].sample}."
@@ -83,11 +83,11 @@ class SuspectNpc < Npc
   def generate_criminal_record
     severity = rand(100)
     # 30% nothing, 30% mild, 25% medium, 15% severe
-    return "#{@name} has no prior criminal record." if severity < 30 || @signal_count == 0
+    return "#{@name} has no prior criminal record." if severity < 30 || @evidence_count == 0
     return "#{@name}'s criminal record contains a few counts of #{ExternalData::instance.get(:negligible_crimes).sample}." if severity < 60
     
-    # Suspicious criminal record = 1 signal
-    @signal_count -= 1
+    # Suspicious criminal record is a signal
+    @evidence_count -= 1
     return "#{@name} served a short jail sentence for #{ExternalData::instance.get(:minor_crimes).sample}." if severity < 85
     return "#{@name} served several years of combined jail time for #{ExternalData::instance.get(:major_crimes).sample(2).join(' and ')}."
   end
@@ -96,10 +96,10 @@ class SuspectNpc < Npc
     data = ExternalData::instance
     site = data.get(:social_media_sites).sample
     
-    if (@signal_count > 0 && rand(100) < 50)
+    if (@evidence_count > 0 && rand(100) < 50)
     # having few social connection is a signal
       num_friends = rand(15) + 15
-      @signal_count -= 1
+      @evidence_count -= 1
     else
       num_friends = rand(50) + 50
     end
@@ -115,6 +115,6 @@ class SuspectNpc < Npc
   end
   
   def to_s
-    return "#{@name}: #{@signal_count}"
+    return "#{@name}: #{@evidence_count}"
   end
 end

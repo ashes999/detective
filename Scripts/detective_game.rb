@@ -149,34 +149,36 @@ class DetectiveGame
     non_killers.shuffle!
     
     num_signals = 3 + (2 * difficulty)
-    signal_counts = {}
+    evidence_counts = {}
     
     num_signals.times do
       npc = non_victims.sample
-      npc.signal_count += 1      
+      npc.evidence_count += 1      
     end
     
-    # For now, the killer has the most signals. Swap.
+    # For now, the killer has the most signals. Swap to ensure that.
     non_victims.each do |n|
-      if n.signal_count > @killer.signal_count
-        temp = @killer.signal_count        
-        @killer.signal_count = n.signal_count
-        n.signal_count = temp
+      if n.evidence_count > @killer.evidence_count
+        temp = @killer.evidence_count        
+        @killer.evidence_count = n.evidence_count
+        n.evidence_count = temp
       end
     end
     
-    # Make sure nobody ties with us. Always be one more. TODO: the killer 
-    # shouldn't necessarily have more signals, but you should be able to
-    # rule out people with more signals or better signals than him/her.
-    @killer.signal_count += 1
+    # Make sure nobody ties with us. Always be one more.
+    # TODO: the killer shouldn't necessarily have more signals, but you should
+    # be able to rule out people with more signals or better signals than him/her.
+    @killer.evidence_count += 1
     debug "Signal distribution: #{non_victims}"
     non_victims.each { |n| n.augment_profile }
-    @victim.signal_count = rand(2) # 0 or 1 signal
+    @victim.evidence_count = rand(2) # 0 or 1 signal
     @victim.augment_profile
     
-    # Everyone needs an alibi. Weak alibis consume one signal.
+    # Everyone needs an alibi. Weak alibis are a signal.
     generate_killers_alibi(non_killers)
     generate_alibis(non_killers)
+    
+    
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
     debug "Murder weapon: #{@murder_weapon}"
   end
@@ -210,7 +212,7 @@ class DetectiveGame
         debug "Killer has a mutual alibi with #{alibi.name}"
       end
     else
-      @killer.signal_count -= 1 # weak alibi: one indicator
+      @killer.evidence_count -= 1 # weak alibi: one indicator
       @killer.alibi_person = non_killers.sample
       debug "Killer has an obvious alibi which #{@killer.alibi_person.name} will not verify"
     end
@@ -223,7 +225,7 @@ class DetectiveGame
       if (non_killers.count == 1)
         loner = non_killers.pop
         loner.alibi_person = nil
-        loner.signal_count -= 1
+        loner.evidence_count -= 1
       else
         n1 = non_killers.pop
         n2 = non_killers.pop
@@ -235,7 +237,7 @@ class DetectiveGame
             debug "Alibi: #{n1.name} <=> #{n2.name}"
             n3 = non_killers.pop
             n3.alibi_person = nil
-            n3.signal_count -= 1
+            n3.evidence_count -= 1
             debug "Alibi: #{n3.name} was alone"
           else
             # ring alibi

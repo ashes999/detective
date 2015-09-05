@@ -55,10 +55,6 @@ class DetectiveGame
     
     @notebook = Notebook.new(@npcs)
     DataManager.set(DATA_KEY, self)
-    
-    Game_Interpreter.instance.show_message 'Check the notebook to view notes, and solve the case.
-Use the Profiles screen to view suspect profiles.'
-
   end
   
   # Changes the close-up image of the murder weapon to the blood-streaked one
@@ -160,10 +156,18 @@ Use the Profiles screen to view suspect profiles.'
       end
     end
     
-    # Make sure nobody ties with us. Always be one up.
+    # Make sure nobody ties with us. Always be one more.
     @killer.signal_count += 1
     debug "Signal distribution: #{non_victims}"
     
+    generate_alibis(non_killers)    
+    @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
+    debug "Murder weapon: #{@murder_weapon}"
+  end
+  
+  private
+  
+  def generate_alibis(non_killers)  
     # % chance of having a strong alibi as the killer
     strong_alibi = rand(100) <= ExternalData::instance.get(:strong_alibi_probability)
     debug " Killer's alibi is strong? #{strong_alibi}"
@@ -198,38 +202,39 @@ Use the Profiles screen to view suspect profiles.'
     # Pick two random people and link their alibis
     # To deal with odd numbers, make a trio
     while non_killers.size > 0 do
-      n1 = non_killers.pop
-      n2 = non_killers.pop
-      
-      if non_killers.size % 2 == 1
-        if rand(100) <= ExternalData::instance.get(:alone_alibi_probability)
+      if (non_killers.count == 1)
+        loner = non_killers.pop
+        loner.alibi_person = nil
+        loner.signal_count -= 1
+      else
+        n1 = non_killers.pop
+        n2 = non_killers.pop
+        
+        if non_killers.size % 2 == 1
+          if rand(100) <= ExternalData::instance.get(:alone_alibi_probability)
+            n1.alibi_person = n2
+            n2.alibi_person = n1
+            debug "Alibi: #{n1.name} <=> #{n2.name}"
+            n3 = non_killers.pop
+            n3.alibi_person = nil
+            n3.signal_count -= 1
+            debug "Alibi: #{n3.name} was alone"
+          else
+            # ring alibi
+            n3 = non_killers.pop
+            n1.alibi_person = n2
+            n2.alibi_person = n3
+            n3.alibi_person = n1
+            debug "Alibi: Ring of [#{n1.name}, #{n2.name}, #{n3.name}]"
+          end
+        else
+          debug "Alibi: #{n1.name} <=> #{n2.name}"
           n1.alibi_person = n2
           n2.alibi_person = n1
-          debug "Alibi: #{n1.name} <=> #{n2.name}"
-          n3 = non_killers.pop
-          n3.alibi_person = nil
-          n3.signal_count -= 1
-          debug "Alibi: #{n3.name} was alone"
-        else
-          # ring alibi
-          n3 = non_killers.pop
-          n1.alibi_person = n2
-          n2.alibi_person = n3
-          n3.alibi_person = n1
-          debug "Alibi: Ring of [#{n1.name}, #{n2.name}, #{n3.name}]"
         end
-      else
-        debug "Alibi: #{n1.name} <=> #{n2.name}"
-        n1.alibi_person = n2
-        n2.alibi_person = n1
       end
     end
-    
-    @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
-    debug "Murder weapon: #{@murder_weapon}"
   end
-  
-  private
   
   def debug(message)
     Logger.log(message) if @debug == true

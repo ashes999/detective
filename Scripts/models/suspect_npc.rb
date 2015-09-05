@@ -42,7 +42,10 @@ class SuspectNpc < Npc
   end
   
   def profile
-    return "#{@name} is a #{@age} year-old #{@profession} with blood type #{@blood_type}.\n#{@criminal_record}\n#{@social_media[:profile]}"
+    profile = ''
+    profile = "#{@name} was found dead earlier today.\n" if @dead
+    profile = "#{profile}#{@name} is a #{@age} year-old #{@profession} with blood type #{@blood_type}.\n#{@criminal_record}\n#{@social_media[:profile]}"
+    return profile
   end
   
   def alibi_person

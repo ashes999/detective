@@ -8,18 +8,18 @@
 # Levels are: :info, :debug. 
 #========================================================================
 
-LOGGING_LEVEL = :info
-
-#### end of parameters ###
-
 LEVELS = { :info => 1, :debug => 2 }
 
 class Logger
+  @@logging_level = :info
+  @@first_message = true
+  
+  def self.logging_level=(value)
+    @@logging_level = value
+  end
 
-	@@first_message = true
-
-	def self.log(message, level = LOGGING_LEVEL)
-		return if level > LOGGING_LEVEL
+	def self.log(message, level = @@logging_level)
+		return if level > @@logging_level
 		
 		mode = @@first_message ? 'w' : 'a'
 		

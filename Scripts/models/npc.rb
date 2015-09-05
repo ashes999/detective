@@ -9,11 +9,20 @@ class Npc
   # "real" model attributes about who we are and stuff
   attr_reader :name
   
+  # Graphics we can use
+  ### calculated damage spritesheet cells for these actors only; when formula
+  ### derivation continues, you can include more actors. plzkthx.
+  SPRITESHEETS = [ 'Actor1', 'Actor2' ]
+  DEATH_SPRITESHEETS = ['Behavior1']
+  NPC_TEMPLATE_IDS = [1]    # NPC IDs of events we can copy
+  NPC_SPEEDS = [2, 3, 4, 5] # slower to faster
+  NPC_FREQUENCIES = [2, 3, 4] # lower to higher
+  
   # move_speed = 1-6
   # move_frequency = 1-5
   # spritesheet_file is the filename used for the graphic, eg. Actor1.
   # spritesheet_index is the base 0 index (0-7; first row, then second row)
-  # template_id is the ID of the event we're copying, on map with ID=DATA_MAP_ID
+  # template_id is the ID of the event we're copying, on map with the ID specified in NpcSpawner::DATA_MAP_ID
   def initialize(name, spritesheet_file = nil, spritesheet_index = nil, template_id = nil, npc_speed = nil, npc_frequency = nil)
     @spritesheet_file = spritesheet_file || SPRITESHEETS.sample
     @spritesheet_index = spritesheet_index || rand(8) # 8 indicies/characters per graphic

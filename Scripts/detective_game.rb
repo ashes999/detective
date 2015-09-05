@@ -6,6 +6,7 @@ require 'scripts/models/notebook'
 require 'scripts/models/suspect_npc'
 require 'scripts/api/vxace_api'
 require 'scripts/utils/external_data'
+require 'scripts/evidence_generator'
 
 # Not directly used here, but just load them up please. Thanks.
 require 'scripts/utils/json_parser'
@@ -42,9 +43,9 @@ class DetectiveGame
     end
     srand(seed)
     Logger.log "New game started in universe ##{seed}"
-    
-    @debug = ExternalData::instance.get(:debug)
-    debug 'Debug mode enabled.'
+        
+    Logger.logging_level = :debug if ExternalData::instance.get(:debug) == true
+    Logger.debug 'Logger.debug mode enabled.'
     
     difficulty = ExternalData::instance.get(:difficulty)
     raise "Difficulty (#{difficulty}) should be in the range of 1-10" if difficulty < 1 || difficulty > 10
@@ -57,7 +58,7 @@ class DetectiveGame
     # difficulty of 1 = min_npcs, difficulty of 10 = max_npcs    
     num_npcs = (range * difficulty / 10.0).round    
     num_npcs = rand(range) + min_npcs
-    debug "Generating #{num_npcs} npcs; range was #{min_npcs} to #{max_npcs}"
+    Logger.debug "Generating #{num_npcs} npcs; range was #{min_npcs} to #{max_npcs}"
     
     generate_npcs(num_npcs)
     generate_scenario(difficulty) 
@@ -99,6 +100,7 @@ class DetectiveGame
   
   def spawn_this_maps_npcs
     @npcs.each { |n| NpcSpawner.spawn(n) if n.map_id == Game_Map::instance.map_id  }
+    @evidences.each { |e| NpcSpawner.spawn(e) if e.map_id == Game_Map::instance.map_id }
   end
   
   private  
@@ -123,10 +125,11 @@ class DetectiveGame
     @npcs = []
     
     num_npcs.times do
+      # Decide on a random map where this NPC appears
       map_id = NPC_MAPS.sample
       name = NameGenerator::generate_name
       @npcs << SuspectNpc.new(map_id, name)
-      debug "#{@npcs[-1].name} is on map #{map_id}"
+      Logger.debug "#{@npcs[-1].name} is on map #{map_id}"
     end
   end
   
@@ -134,14 +137,14 @@ class DetectiveGame
   # The number of signals is 3 + (2 * difficulty), distributed
   # randomly to NPCs. (The killer gets more signals.)
   def generate_scenario(difficulty)    
-    debug "Difficulty: #{difficulty}"
+    Logger.debug "Difficulty: #{difficulty}"
     @killer = @npcs.sample
     @victim = @killer
     @victim = npcs.sample while @victim == @killer
     @victim.die
     @victim.map_id = MANSION_MAP_ID
     Logger.log "Victim: #{@victim.name}"
-    debug "Killer: #{@killer.name}"
+    Logger.debug "Killer: #{@killer.name}"
     
     non_victims = @npcs - [@victim]
     non_killers = non_victims - [@killer]
@@ -169,7 +172,7 @@ class DetectiveGame
     # TODO: the killer shouldn't necessarily have more signals, but you should
     # be able to rule out people with more signals or better signals than him/her.
     @killer.evidence_count += 1
-    debug "Signal distribution: #{non_victims}"
+    Logger.debug "Signal distribution: #{non_victims}"
     non_victims.each { |n| n.augment_profile }
     @victim.evidence_count = rand(2) # 0 or 1 signal
     @victim.augment_profile
@@ -177,10 +180,10 @@ class DetectiveGame
     # Everyone needs an alibi. Weak alibis are a signal.
     generate_killers_alibi(non_killers)
     generate_alibis(non_killers)
-    
+    @evidences = EvidenceGenerator::distribute_evidence(non_victims, NPC_MAPS)
     
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
-    debug "Murder weapon: #{@murder_weapon}"
+    Logger.debug "Murder weapon: #{@murder_weapon}"
   end
   
   private
@@ -188,8 +191,8 @@ class DetectiveGame
   def generate_killers_alibi(non_killers)
   # % chance of having a strong alibi as the killer
     strong_alibi = rand(100) <= ExternalData::instance.get(:strong_alibi_probability)
-    debug " Killer's alibi is strong? #{strong_alibi}"
-    debug "Non-killers: #{non_killers.collect {|n| n.name}}"
+    Logger.debug " Killer's alibi is strong? #{strong_alibi}"
+    Logger.debug "Non-killers: #{non_killers.collect {|n| n.name}}"
     
     if (strong_alibi)      
       # Make a pair, or a "ring" of three people who were together
@@ -201,20 +204,20 @@ class DetectiveGame
         n1.alibi_person = n2
         n2.alibi_person = @killer
         @killer.alibi_person = n1
-        debug "Killer uses a ring-type alibi: #{@killer.name}, #{n1.name}, #{n2.name}}"
+        Logger.debug "Killer uses a ring-type alibi: #{@killer.name}, #{n1.name}, #{n2.name}}"
       elsif rand(100) <= ExternalData::instance.get(:alone_alibi_probability)
-        debug 'Killer claims to be alone as their alibi.'
+        Logger.debug 'Killer claims to be alone as their alibi.'
         @killer.alibi_person = nil
       else
         alibi = non_killers.pop
         @killer.alibi_person = alibi
         alibi.alibi_person = @killer
-        debug "Killer has a mutual alibi with #{alibi.name}"
+        Logger.debug "Killer has a mutual alibi with #{alibi.name}"
       end
     else
       @killer.evidence_count -= 1 # weak alibi: one indicator
       @killer.alibi_person = non_killers.sample
-      debug "Killer has an obvious alibi which #{@killer.alibi_person.name} will not verify"
+      Logger.debug "Killer has an obvious alibi which #{@killer.alibi_person.name} will not verify"
     end
   end
   
@@ -234,30 +237,25 @@ class DetectiveGame
           if rand(100) <= ExternalData::instance.get(:alone_alibi_probability)
             n1.alibi_person = n2
             n2.alibi_person = n1
-            debug "Alibi: #{n1.name} <=> #{n2.name}"
+            Logger.debug "Alibi: #{n1.name} <=> #{n2.name}"
             n3 = non_killers.pop
             n3.alibi_person = nil
             n3.evidence_count -= 1
-            debug "Alibi: #{n3.name} was alone"
+            Logger.debug "Alibi: #{n3.name} was alone"
           else
             # ring alibi
             n3 = non_killers.pop
             n1.alibi_person = n2
             n2.alibi_person = n3
             n3.alibi_person = n1
-            debug "Alibi: Ring of [#{n1.name}, #{n2.name}, #{n3.name}]"
+            Logger.debug "Alibi: Ring of [#{n1.name}, #{n2.name}, #{n3.name}]"
           end
         else
-          debug "Alibi: #{n1.name} <=> #{n2.name}"
+          Logger.debug "Alibi: #{n1.name} <=> #{n2.name}"
           n1.alibi_person = n2
           n2.alibi_person = n1
         end
       end
     end
   end
-  
-  def debug(message)
-    Logger.log(message) if @debug == true
-  end
-  
 end

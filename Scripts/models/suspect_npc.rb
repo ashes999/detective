@@ -1,12 +1,18 @@
 require 'scripts/name_generator'
 require 'scripts/models/npc'
 
+# Add an "npc" field to the event class, so we can keep all our code externalized
+class Game_Event
+  # Access via scripts on an event, eg. $game_map.events[self.event_id].npc
+  attr_accessor :npc
+end
+  
 # A wrapper around the RPG Maker event. It exposes some properties and stuff, and methods like die.
 class SuspectNpc < Npc
     
   # evidence_count: the number of signals (suspicious information) that this person is the killer.
   # Starts set to some value, and decreases every time we actualize a signal (eg. create weak alibi)
-  attr_accessor :map_id, :age, :profession, :evidence_count
+  attr_accessor :map_id, :age, :profession, :evidence_count, :blood_type
   
   # move_speed = 1-6
   # move_frequency = 1-5

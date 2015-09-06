@@ -1,7 +1,5 @@
 # Used to set event direction, move speed and frequency (extends RPG Maker class)
 class Game_Event
-  # Access via scripts on an event, eg. $game_map.events[self.event_id].npc
-  attr_accessor :npc
   
   # These two are used to randomize event speed
   def move_speed=(value)

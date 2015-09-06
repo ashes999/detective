@@ -8,7 +8,9 @@
     "ring_alibi_probability": 40,
     "alone_alibi_probability": 30,    
     
-    "professions": ["janitor", "programmer", "accountant", "business analyst", "personal trainer", "CEO", "teacher", "cop", "journalist"],    
+    "professions": ["janitor", "programmer", "accountant", "business analyst", "personal trainer", "CEO", "teacher", "cop", "journalist"],
+    "blood_pool_probability": 100,
+    
     "negligible_crimes": ["petty theft", "shoplifting", "vandalism", "breaking and entering"],
     "minor_crimes": ["extortion", "assault", "robbery", "embezzlement", "substance abuse"],
     "major_crimes": ["armed robbery", "homicide", "kidnapping", "arson", "terrorism"],

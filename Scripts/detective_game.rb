@@ -39,6 +39,7 @@ class DetectiveGame
     if ExternalData::instance.key?(:universe)
       seed = ExternalData::instance.get(:universe) 
     else
+      srand()
       seed = srand()
     end
     srand(seed)

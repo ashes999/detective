@@ -26,7 +26,7 @@
     
     # The probability that we generate a pool of the victim's blood in the house
     # of one of the NPCs.
-    "victims_blood_pool_probability": 100,
+    "victims_blood_pool_probability": 10,
     
     # The probability we generate a pool of blood of an NPC in the mansion
     # (max is two of these pools)

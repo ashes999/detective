@@ -1,20 +1,49 @@
+###
+# Stuff you can tweak. Tweak them one at a time, test a few new games, then keep.
+# This way, if you break something, it's easy to isolate where/what.
+#
+# NOTE: changes to this file are reflected immediately, albeit most of it is used
+# at the time you generate a new game; so you can save, and create a new game,
+# and you should see your changes immediately.
+###
 {
-    "debug": true
-    "difficulty": 10,
+    "debug": true # set to false or delete for production; gives away lots of data
+    "difficulty": 10, # ranges from 1 to 10. 10 = most number of NPCs and evidence.
+    
+    # Min/max NPCs are at difficulty = 1
     "min_number_of_npcs": 5,
     "max_number_of_npcs": 7,
-    
+        
+    # The probability someone has a "strong" alibi (that's verifiable), even if guilty
     "strong_alibi_probability": 30,
+    # The probability the killer has a "ring" alibi (A => B => C => A), given that they have a strong alibi
     "ring_alibi_probability": 40,
-    "alone_alibi_probability": 30,    
     
-    "professions": ["janitor", "programmer", "accountant", "business analyst", "personal trainer", "CEO", "teacher", "cop", "journalist"],
+    # Given that the killer has a weak alibi, the probability that it's "I was alone."
+    # If they don't have this, their alibi will be an obvious lie (that "I was with
+    # person X"), which person X will not reciprocate.
+    "alone_alibi_probability": 30,
+    
+    # The probability that we generate a pool of the victim's blood in the house
+    # of one of the NPCs.
+    "victims_blood_pool_probability": 100,
+    
+    # The probability we generate a pool of blood of an NPC in the mansion
+    # (max is two of these pools)
     "blood_pool_probability": 25,
     
+    ###
+    # Start the NPC informational section. This stuff all feeds into their profile.
+    ###
+    
+    # NPC professions; this is regardless of their guilt.
+    "professions": ["janitor", "programmer", "accountant", "business analyst", "personal trainer", "CEO", "teacher", "cop", "journalist"],    
+    # Negliable crimes; these are red-herrings (they don't constitute evidence).
     "negligible_crimes": ["petty theft", "shoplifting", "vandalism", "breaking and entering"],
+    # Minor and major crimes, which count as evidence.
     "minor_crimes": ["extortion", "assault", "robbery", "embezzlement", "substance abuse"],
     "major_crimes": ["armed robbery", "homicide", "kidnapping", "arson", "terrorism"],
-    
+    # Social media sites, post frequencies, and topics (not related to evidence).
     "social_media_sites": ["Google+", "Facebook", "Twitter", "Tumblr"],
     "social_media_frequencies": ["rarely", "occasionally", "frequently", "incessantly"],
     "social_media_topics": ["gaming", "television", "software", "religion", "books", "business", "food", "holidays", "the internet", "sports"]

@@ -39,6 +39,8 @@ class ExternalData
     if mtime != @last_mtime
       @last_mtime = mtime
       file = File.read(FILENAME)
+      # remove comments
+      file = file.gsub(/#.*/, '')
       json = JSON.decode(file)
       raise 'Invalid JSON' if json.nil?
       

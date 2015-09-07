@@ -190,15 +190,17 @@ class DetectiveGame
   private
   
   def generate_killers_alibi(non_killers)
-  # % chance of having a strong alibi as the killer
-    strong_alibi = rand(100) <= ExternalData::instance.get(:strong_alibi_probability)
+    data = ExternalData::instance
+    
+    # % chance of having a strong alibi as the killer
+    strong_alibi = rand(100) <= data.get(:strong_alibi_probability)
     Logger.debug " Killer's alibi is strong? #{strong_alibi}"
     Logger.debug "Non-killers: #{non_killers.collect {|n| n.name}}"
     
     if (strong_alibi)      
       # Make a pair, or a "ring" of three people who were together
       # 40% chance to be a ring
-      make_ring = true if rand(100) <= 40
+      make_ring = true if rand(100) <= data.get(:ring_alibi_probability)
       if make_ring
         n1 = non_killers.pop
         n2 = non_killers.pop        
@@ -206,15 +208,15 @@ class DetectiveGame
         n2.alibi_person = @killer
         @killer.alibi_person = n1
         Logger.debug "Killer uses a ring-type alibi: #{@killer.name}, #{n1.name}, #{n2.name}}"
-      elsif rand(100) <= ExternalData::instance.get(:alone_alibi_probability)
-        Logger.debug 'Killer claims to be alone as their alibi.'
-        @killer.alibi_person = nil
       else
         alibi = non_killers.pop
         @killer.alibi_person = alibi
         alibi.alibi_person = @killer
         Logger.debug "Killer has a mutual alibi with #{alibi.name}"
       end
+    elsif rand(100) <= data.get(:alone_alibi_probability)
+      Logger.debug 'Killer claims to be alone as their alibi.'
+      @killer.alibi_person = nil
     else
       @killer.evidence_count -= 1 # weak alibi: one indicator
       @killer.alibi_person = non_killers.sample

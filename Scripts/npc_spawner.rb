@@ -11,6 +11,7 @@ class NpcSpawner
     return @@DATA_MAP_ID
   end
   
+  # NPC can be an event, like Evidence. It just needs requisite fields (template_id, update_event method, and optionally an x/y)
   def self.spawn(npc)    
     events = Game_Map::instance.events    
     template_id = npc.template_id
@@ -24,8 +25,7 @@ class NpcSpawner
     
     Game_Map::instance.spawn_event(location[:x], location[:y], template_id, @@DATA_MAP_ID)
     event = events[events.keys[-1]]    
-    npc.update_event(event)
-    Logger.debug "SPAWNED #{npc} ON MAP #{Game_Map::instance.map_id} AT #{location[:x]}, #{location[:y]}"
+    npc.update_event(event)    
     return npc
   end  
 end

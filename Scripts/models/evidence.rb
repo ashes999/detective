@@ -31,10 +31,6 @@ class Evidence
   def on_interact
     # Override: what happens if you walk up to this evidence and press space?
   end
-  
-  def to_s
-    return "Blood at (#{@x}, #{@y}) on map #{@map_id}"
-  end
 end
   
 # A pool of blood. Someone's blood.
@@ -44,5 +40,9 @@ class BloodPool < Evidence
   def on_interact
     Game_Interpreter::instance.show_message "You see a pool of blood. Your phone scans it and registers it as blood type '#{blood_type}.'"
     DetectiveGame::instance.notebook.note("You found a pool of blood type #{blood_type} in the manor.")
+  end
+  
+  def to_s
+    return "Blood type #{@blood_type} at (#{@x}, #{@y}) on map #{@map_id}"
   end
 end

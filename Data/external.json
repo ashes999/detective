@@ -1,6 +1,6 @@
 {
     "debug": true
-    "difficulty": 1,
+    "difficulty": 10,
     "min_number_of_npcs": 5,
     "max_number_of_npcs": 7,
     
@@ -9,7 +9,7 @@
     "alone_alibi_probability": 30,    
     
     "professions": ["janitor", "programmer", "accountant", "business analyst", "personal trainer", "CEO", "teacher", "cop", "journalist"],
-    "blood_pool_probability": 100,
+    "blood_pool_probability": 25,
     
     "negligible_crimes": ["petty theft", "shoplifting", "vandalism", "breaking and entering"],
     "minor_crimes": ["extortion", "assault", "robbery", "embezzlement", "substance abuse"],

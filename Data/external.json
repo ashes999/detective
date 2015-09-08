@@ -8,7 +8,7 @@
 ###
 {
     "debug": true # set to false or delete for production; gives away lots of data
-    "difficulty": 10, # ranges from 1 to 10. 10 = most number of NPCs and evidence.
+    "difficulty": 3, # ranges from 1 to 10. 10 = most number of NPCs and evidence.
     
     # Min/max NPCs are at difficulty = 1
     "min_number_of_npcs": 5,
@@ -24,13 +24,22 @@
     # person X"), which person X will not reciprocate.
     "alone_alibi_probability": 30,
     
-    # The probability that we generate a pool of the victim's blood in the house
-    # of one of the NPCs.
-    "victims_blood_pool_probability": 10,
+    ###
+    # Start evidence-related probability
+    ###
     
     # The probability we generate a pool of blood of an NPC in the mansion
     # (max is two of these pools)
     "blood_pool_probability": 25,
+    
+    # The probability that we generate a pool of the victim's blood in the house
+    # of one of the NPCs.
+    "victims_blood_pool_probability": 8,
+    
+    # The probability of an NPC's fingerprints in the mansion (murder site)
+    "fingerprints_probability": 30,
+    # Probability the prints are good, and the person is in the DB, so we can match 'em
+    "fingerprints_match": 70,
     
     ###
     # Start the NPC informational section. This stuff all feeds into their profile.
@@ -46,5 +55,12 @@
     # Social media sites, post frequencies, and topics (not related to evidence).
     "social_media_sites": ["Google+", "Facebook", "Twitter", "Tumblr"],
     "social_media_frequencies": ["rarely", "occasionally", "frequently", "incessantly"],
-    "social_media_topics": ["gaming", "television", "software", "religion", "books", "business", "food", "holidays", "the internet", "sports"]
+    "social_media_topics": ["gaming", "television", "software", "religion", "books", "business", "food", "holidays", "the internet", "sports"],
+    
+    # Probability someone will like something strange.
+    "suspicious_interests_probability": 40,
+    "suspicious_interests": ["rifles", "knives", "demons", "war", "the devil", "drones"],
+    # If they don't? Their normal interests.
+    "benign_interests": ["flowers", "elephants", "Africa", "cooking", "painting"]
+    
 }

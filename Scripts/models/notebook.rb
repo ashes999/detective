@@ -42,7 +42,7 @@ class Notebook
     @notes.each do |n|
       # match the name with word-boundaries (full word)
       # only notes from this person as the speaker
-      to_return = "#{to_return}#{n}\n" if n.match(/^#{npc_name}:/)
+      to_return = "#{to_return}#{n}\n" if n.match(/\b#{npc_name}\b/)
     end
     return to_return
   end

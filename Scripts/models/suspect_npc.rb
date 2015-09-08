@@ -65,25 +65,27 @@ class SuspectNpc < Npc
     end
   end
   
-  # These are the things that may consume signals, so do them after we know how
-  # many signals each NPC has.
+  # These are the things that may consume evidence signals, so do them after we
+  # know how many signals each NPC has.
   def augment_profile
     @criminal_record = generate_criminal_record
     @social_media = generate_social_media_profile
+    generate_suspicious_interests
     @messages << "I like #{@social_media[:post_topic]}!"
+    
+    Logger.debug("DONE: #{@name} => EC=#{@evidence_count}")
   end
   
   private
   
   def pick_blood_type
     # Based on culmulative distribution from http://www.redcrossblood.org/learn-about-blood/blood-types
-    # O: 48% A: 31% B: 16% AB: 4%
-    # i.e. 50% O, 80% O and A
+    # O: 48% A: 31% B: 16% AB: 4%    
     blood_picked = rand(100)
-    return 'O' if blood_picked < 48
-    return 'A' if blood_picked < 48 + 31
-    return 'B' if blood_picked < 48 + 31 + 16
-    return 'AB'
+    return 'O' if blood_picked < 48 # 48%
+    return 'A' if blood_picked < 48 + 31 # 31%
+    return 'B' if blood_picked < 48 + 31 + 16 # 16%
+    return 'AB' # 4%
   end
   
   def generate_criminal_record
@@ -93,8 +95,9 @@ class SuspectNpc < Npc
     return "#{@name}'s criminal record contains a few counts of #{ExternalData::instance.get(:negligible_crimes).sample}." if severity < 60
     
     # Suspicious criminal record is a signal
-    @evidence_count -= 1
+    @evidence_count -= 1 # "minor" crimes are worth one evidence count
     return "#{@name} served a short jail sentence for #{ExternalData::instance.get(:minor_crimes).sample}." if severity < 85
+    @evidence_count -= 1 # "major" crimes are worth two evidence counts
     return "#{@name} served several years of combined jail time for #{ExternalData::instance.get(:major_crimes).sample(2).join(' and ')}."
   end
   
@@ -118,6 +121,18 @@ class SuspectNpc < Npc
       :post_topic => post_topic,
       :profile => "#{@name} has #{num_friends} friends on #{site} and #{post_frequency} posts about #{post_topic}."
     }
+  end
+  
+  def generate_suspicious_interests
+    if @evidence_count > 0 && rand(100) < ExternalData::instance.get(:suspicious_interests_probability)
+      # TODO: have other people say this about this person, instead of them saying it themselves
+      topic = ExternalData::instance.get(:suspicious_interests).sample
+      @evidence_count -= 1
+    else
+      topic = ExternalData::instance.get(:benign_interests).sample
+    end
+    @messages << "I always found #{topic} fascinating."
+    Logger.debug "#{@name} likes #{topic}."
   end
   
   def to_s

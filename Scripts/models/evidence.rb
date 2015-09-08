@@ -38,11 +38,28 @@ class BloodPool < Evidence
   attr_accessor :blood_type
   
   def on_interact
-    Game_Interpreter::instance.show_message "You see a pool of blood. Your phone scans it and registers it as blood type '#{blood_type}.'"
-    DetectiveGame::instance.notebook.note("You found a pool of blood type #{blood_type} in the manor.")
+    Game_Interpreter::instance.show_message "You see a pool of blood. You send it to the lab. It comes back as blood type '#{@blood_type}.'"
+    DetectiveGame::instance.notebook.note("You found a pool of blood type #{@blood_type} in the manor.")
+  end
+end
+
+class Fingerprints < Evidence
+  attr_accessor :owner, :match_probability
+  
+  def initialize
+    @match_probability = rand(40) + 50 # 50-90%    
   end
   
-  def to_s
-    return "Blood type #{@blood_type} at (#{@x}, #{@y}) on map #{@map_id}"
+  def on_interact
+    if (@owner.nil?)
+      # poor-quality or the owner is not registered in the International DNA Database.
+      match = "They were too poor-quality to match any of the suspects' fingerprints."      
+    else
+      match = "There's a #{@match_probability}% chance that they're #{@owner}'s fingerprints."
+      
+    end
+    
+    Game_Interpreter::instance.show_message "You send the fingerprinted-object to the International DNA Database. #{match}"
+    DetectiveGame::instance.notebook.note("You found fingerprints in the manor. #{match}") unless @owner.nil?
   end
 end

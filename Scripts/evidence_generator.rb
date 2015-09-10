@@ -61,8 +61,7 @@ class EvidenceGenerator
         e.template_id = EVENT_IDS[:fingerprints]
         
         if rand(100) <= data.get(:fingerprints_match)
-          e.owner = npc.name
-          
+          e.owner = npc.name          
           # Worth one evidence count, unless it's >= 70% match, in which case,
           # it's worth two evidence counts.
           npc.evidence_count -= 1          

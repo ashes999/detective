@@ -73,7 +73,8 @@ class SuspectNpc < Npc
     generate_suspicious_interests
     @messages << "I like #{@social_media[:post_topic]}!"
     
-    Logger.debug("DONE: #{@name} => EC=#{@evidence_count}")
+    Logger.debug("DONE: #{@name}")
+    Logger.debug("WARNING: EC (#{@evidence_count}) > 0!!") if @evidence_count > 0    
   end
   
   private
@@ -88,16 +89,24 @@ class SuspectNpc < Npc
     return 'AB' # 4%
   end
   
+  ###
+  # Generates a random criminal record.
+  # For @evidence_count == 0, you either get "no record" or "a few counts of ..."
+  # For @evidence_count == 1, you may get as above, or "a short jail sentence"
+  # For @evidence_count >= 2, you may get as above, or "several years of combined jail time"
   def generate_criminal_record
     severity = rand(100)
     # 30% nothing, 30% mild, 25% medium, 15% severe
-    return "#{@name} has no prior criminal record." if severity < 30 || @evidence_count == 0
-    return "#{@name}'s criminal record contains a few counts of #{ExternalData::instance.get(:negligible_crimes).sample}." if severity < 60
+    return "#{@name} has no prior criminal record." if severity < 30
+    return "#{@name}'s criminal record contains a few counts of #{ExternalData::instance.get(:negligible_crimes).sample}." if severity < 60 || @evidence_count == 0
     
     # Suspicious criminal record is a signal
     @evidence_count -= 1 # "minor" crimes are worth one evidence count
-    return "#{@name} served a short jail sentence for #{ExternalData::instance.get(:minor_crimes).sample}." if severity < 85
+    Logger.debug("S1: #{@name} #{@evidence_count}")
+    return "#{@name} served a short jail sentence for #{ExternalData::instance.get(:minor_crimes).sample}." if severity < 85 || @evidence_count == 0
+    
     @evidence_count -= 1 # "major" crimes are worth two evidence counts
+    Logger.debug("S2: #{@name} #{@evidence_count}")
     return "#{@name} served several years of combined jail time for #{ExternalData::instance.get(:major_crimes).sample(2).join(' and ')}."
   end
   

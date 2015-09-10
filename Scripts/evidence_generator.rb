@@ -12,7 +12,7 @@ class EvidenceGenerator
     raise 'Static class!'
   end
   
-  def self.distribute_evidence(non_victims, npc_maps, mansion_map_id)
+  def self.distribute_evidence(non_victims, victim, npc_maps, mansion_map_id)
     # An array of stuff that we need to spawn on the corresponding map.
     # This includes things like fingerprints, pools of blood, etc.
     evidence = []
@@ -39,7 +39,7 @@ class EvidenceGenerator
         npc.evidence_count -= 1
         evidence << e
         blood_spawned += 1
-        Logger.debug("Generating a pool of #{npc.name}'s blood type in the mansion.")
+        Logger.debug("Generating a pool of #{npc.name}'s blood type (#{npc.blood_type}) in the mansion.")
       end
       
       # Victim's blood in the NPC's house/location
@@ -47,11 +47,11 @@ class EvidenceGenerator
         e = BloodPool.new
         e.map_id = npc.map_id
         e.template_id = EVENT_IDS[:blood]
-        e.blood_type = npc.blood_type
+        e.blood_type = victim.blood_type
         npc.evidence_count -= 2
         evidence << e
         victims_blood_spawned += 1
-        Logger.debug("Generating a pool of the victim's blood in #{npc.name}'s dwelling.")
+        Logger.debug("Generating a pool of the victim's blood (type #{victim.blood_type}) in #{npc.name}'s dwelling.")
       end
       
       # NPC's fingerprints in the mansion

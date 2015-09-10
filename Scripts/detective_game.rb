@@ -181,7 +181,7 @@ class DetectiveGame
     # Everyone needs an alibi. Weak alibis are a signal.
     generate_killers_alibi(non_killers)
     generate_alibis(non_killers)
-    @evidences = EvidenceGenerator::distribute_evidence(non_victims, NPC_MAPS, MANSION_MAP_ID)
+    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID)
     
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
     Logger.debug "Murder weapon: #{@murder_weapon}"

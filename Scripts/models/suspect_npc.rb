@@ -77,6 +77,19 @@ class SuspectNpc < Npc
     Logger.debug "WARNING: EC (#{@evidence_count}) > 0!!" if @evidence_count > 0    
   end
   
+  def on_victim(love_or_hate, victim)
+    raise "Invalid value for on_victim: #{love_or_hate}" unless [:love, :hate].include?(love_or_hate)
+    if (love_or_hate == :love)
+      @messages << "#{victim.name} was #{['a good person', 'someone we all admired', 'someone I look up to', 'a true friend'].sample}."
+    else
+      name = victim.name
+      pool = ["I hated #{name}!", "#{name} deserved what they got.", "Nobody's going to cry over #{name}'s death.", "I didn't care much for #{name}"]
+      @messages << pool.sample
+    end
+    
+    Logger.debug "\t#{@name}'s position on the victim is one of #{love_or_hate}. Here's what they have to say: #{@messages[-1]}"
+  end
+  
   private
   
   def pick_blood_type

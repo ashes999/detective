@@ -38,6 +38,7 @@ class EvidenceGenerator
       #    Make sure it's a random subset, not that the killer always gets "victim_blood_pool".
       # 3) Profit
       
+      Logger.debug("Generating evidence for #{npc.name} ...")
       # NPC's blood in the mansion
       if npc.evidence_count >= 1 && rand(100) <= data.get(:npc_blood_pool_probability) && npc_blood_spawned < MAX_SPAWNS[:npc_blood_pool]        
         # spawn a pool of blood
@@ -48,7 +49,7 @@ class EvidenceGenerator
         npc.evidence_count -= 1
         evidence << e
         npc_blood_spawned += 1
-        Logger.debug("Generating a pool of #{npc.name}'s blood type (#{npc.blood_type}) in the mansion.")
+        Logger.debug("\tGenerated a pool of #{npc.name}'s blood type (#{npc.blood_type}) in the mansion.")
       end
       
       # Victim's blood in the NPC's house/location
@@ -60,7 +61,7 @@ class EvidenceGenerator
         npc.evidence_count -= 2
         evidence << e
         victims_blood_spawned += 1
-        Logger.debug("Generating a pool of the victim's blood (type #{victim.blood_type}) in #{npc.name}'s dwelling.")
+        Logger.debug("\tGenerated a pool of the victim's blood (type #{victim.blood_type}) in #{npc.name}'s dwelling.")
       end
       
       # NPC's fingerprints in the mansion
@@ -75,10 +76,10 @@ class EvidenceGenerator
           # it's worth two evidence counts.
           npc.evidence_count -= 1          
           npc.evidence_count -= 1 if e.match_probability >= 70
-          Logger.debug("Generating #{npc.name}'s fingerprints in the mansion")
+          Logger.debug("\tGenerated #{npc.name}'s fingerprints in the mansion")
         else
           e.owner = nil
-          Logger.debug("Generating useless fingerprints in the mansion")
+          Logger.debug("\tGenerated useless fingerprints in the mansion")
         end
         
         evidence << e
@@ -89,7 +90,7 @@ class EvidenceGenerator
       # We do this five times, right? The chance of failure (never happens) is n^5 = 0.1. N = 0.37
       if npc.evidence_count >= 2 && rand(100) <= 37 && blood_on_weapon < MAX_SPAWNS[:npc_blood_on_murder_weapon]
         npc.evidence_count -= 2 # strong signal
-        Logger.debug "#{npc.name}'s blood is on the murder weapon."
+        Logger.debug "\t#{npc.name}'s blood is on the murder weapon."
         blood_on_weapon += 1
       end
       
@@ -97,8 +98,15 @@ class EvidenceGenerator
       # We do this five times, right? The chance of failure (never happens) is n^5 = 0.1. N = 0.37
       if npc.evidence_count >= 2 && rand(100) <= 37 && fingerprints_on_weapon < MAX_SPAWNS[:npc_fingerprints_on_murder_weapon]
         npc.evidence_count -= 2 # strong signal
-        Logger.debug "#{npc.name}'s fingerprints are on the murder weapon."
+        Logger.debug "\t#{npc.name}'s fingerprints are on the murder weapon."
         fingerprints_on_weapon += 1
+      end
+      
+      if npc.evidence_count > 0 && rand(100) <= 50
+        npc.on_victim(:hate, victim)
+        npc.evidence_count -= 1
+      else
+        npc.on_victim(:love, victim)
       end
       
       ###

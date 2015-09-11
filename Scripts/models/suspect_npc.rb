@@ -74,7 +74,7 @@ class SuspectNpc < Npc
     @messages << "I like #{@social_media[:post_topic]}!"
     
     Logger.debug("DONE: #{@name}")
-    Logger.debug("WARNING: EC (#{@evidence_count}) > 0!!") if @evidence_count > 0    
+    Logger.debug "WARNING: EC (#{@evidence_count}) > 0!!" if @evidence_count > 0    
   end
   
   private

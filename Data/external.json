@@ -8,12 +8,12 @@
 ###
 {
     "debug": true # set to false or delete for production; gives away lots of data
-    "difficulty": 3, # ranges from 1 to 10. 10 = most number of NPCs and evidence.
-    "universe": 331078070255133502552769674558916433077,
+    "difficulty": 10, # ranges from 1 to 10. 10 = most number of NPCs and evidence.
+    #"universe": 331078070255133502552769674558916433077,
     
     # Min/max NPCs are at difficulty = 1
-    "min_number_of_npcs": 5,
-    "max_number_of_npcs": 7,
+    "min_number_of_npcs": 4,
+    "max_number_of_npcs": 8,
         
     # The probability someone has a "strong" alibi (that's verifiable), even if guilty
     "strong_alibi_probability": 30,
@@ -22,7 +22,7 @@
     
     # Given that the killer has a weak alibi, the probability that it's "I was alone."
     # If they don't have this, their alibi will be an obvious lie (that "I was with
-    # person X"), which person X will not reciprocate.
+    # person X"), which person X will not reciprocate. This is mostly cosmetic.
     "alone_alibi_probability": 30,
     
     ###
@@ -31,14 +31,14 @@
     
     # The probability we generate a pool of blood of an NPC in the mansion
     # (max is two of these pools)
-    "blood_pool_probability": 70,
+    "npc_blood_pool_probability": 100,
     
     # The probability that we generate a pool of the victim's blood in the house
     # of one of the NPCs.
-    "victims_blood_pool_probability": 50,
+    "victims_blood_pool_probability": 100,
     
     # The probability of an NPC's fingerprints in the mansion (murder site)
-    "fingerprints_probability": 60,
+    "fingerprints_probability": 100,
     # Probability the prints are good, and the person is in the DB, so we can match 'em
     "fingerprints_match": 70,
     

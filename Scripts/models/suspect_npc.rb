@@ -10,6 +10,9 @@ end
 # A wrapper around the RPG Maker event. It exposes some properties and stuff, and methods like die.
 class SuspectNpc < Npc
     
+  RESIST_TALKING_MESSAGES = ['Go away!', 'I don\t have anything to say to you.', 'You a cop? I don\'t talk to cops.', 'We can talk in the presence of my lawyer.', '...']
+  WILL_NOW_TALK_MESSAGE = 'Okay, fine, I\'ll talk. What do you want to know?'
+  
   # evidence_count: the number of signals (suspicious information) that this person is the killer.
   # Starts set to some value, and decreases every time we actualize a signal (eg. create weak alibi)
   attr_accessor :map_id, :age, :profession, :evidence_count, :blood_type
@@ -31,14 +34,29 @@ class SuspectNpc < Npc
     @messages = [      
       "Isn't it #{['strange', 'scary', 'sad', 'unfortunate'].sample}, what happened?",
       "The weather today #{['sucks', 'rocks', 'is okay', 'bothers me', 'confuses me'].sample}."
-    ]    
+    ]
+    
+    # After not talking this many times, we willingly talk
+    @resist_talking_times = -1    
   end
  
   def talk    
     if @dead
       message = "#{@name} is dead ..."
     else
-      message = "#{@name}: #{@messages.sample}"
+      # Do we have to resist talking?
+      if @resist_talking_times > -1 # when 0, say "okay I'll talk"        
+        if @resist_talking_times > 0
+          message = @resist_messages.sample
+        else
+          message = WILL_NOW_TALK_MESSAGE
+        end
+        @resist_talking_times -= 1
+      else
+        message = @messages.sample
+      end
+      
+      message = "#{@name}: #{message}"
     end
     Game_Interpreter.instance.show_message(message)
     DetectiveGame::instance.notebook.note(message)
@@ -85,6 +103,15 @@ class SuspectNpc < Npc
     end
     
     Logger.debug "\t#{@name}'s position on the victim is one of #{love_or_hate}. Here's what they have to say: #{@messages[-1]}"
+  end
+  
+  def resist_talking
+    @times_talked_to = 0
+    # After not talking this many times, we talk
+    @resist_talking_times = rand(2) + 1 # 2-3
+    # NPC says these two things
+    @resist_messages = RESIST_TALKING_MESSAGES.sample(2)
+    Logger.debug "#{@name} will resist talking for #{@resist_talking_times} times."
   end
   
   private

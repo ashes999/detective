@@ -7,6 +7,7 @@ require 'scripts/models/suspect_npc'
 require 'scripts/api/vxace_api'
 require 'scripts/utils/external_data'
 require 'scripts/evidence_generator'
+require 'scripts/utils/enumerable_math'
 
 # Not directly used here, but just load them up please. Thanks.
 require 'scripts/utils/json_parser'
@@ -155,10 +156,48 @@ class DetectiveGame
     num_signals = 3 + (2 * difficulty)
     evidence_counts = {}
     
+    ###
+    # Generate a distribution. For now, just randomly add evidence to NPCs, and
+    # when we're done, use the variance to tell how difficult it is. A variance
+    # of 6 is pretty big (eg. distro is [6, 6, 12]; more than that is too much.
+    # A variance of 2 or less means we have a close distribution, which is good
+    # for very difficult games.
     num_signals.times do
       npc = non_victims.sample
       npc.evidence_count += 1      
     end
+    
+    # pick a variance from 6 (d=0) to 1.5 (d=10), uniformly distributed across difficulty
+    target_variance = 6 - (difficulty * 4.5 / 10)    
+    epsilon = 1
+    v = non_victims.collect { |n| n.evidence_count }.variance
+    Logger.debug "Target variance is #{target_variance}; starting with #{v}..."
+    Logger.debug "\tEarliest distro is #{non_victims}"
+    
+    # Not within epsilon? we need to tweak variance.
+    while (v - target_variance).abs >= epsilon
+      if v > target_variance
+        # Decrease variance. Decrease the max by one and increase the min by one.
+        max = max_evidence_npc(non_victims)
+        min = min_evidence_npc(non_victims)
+        Logger.debug "\tVariance too high; swapping #{max} with #{min}"
+        max.evidence_count -= 1
+        min.evidence_count += 1        
+      else
+        # Increase variance. Increase the min by one and decrease someone random by one.
+        r1 = non_victims.sample
+        r2 = (non_victims - [r1]).sample
+        Logger.debug "\tVariance too low; swapping #{r1} with #{r2}"
+        r1.evidence_count -= 1
+        r2.evidence_count += 1
+      end
+      
+      v = non_victims.collect { |n| n.evidence_count }.variance
+      Logger.debug "New v=#{v}"
+    end
+    
+    #
+    ### End distribution
     
     # For now, the killer has the most signals. Swap to ensure that.
     non_victims.each do |n|
@@ -173,7 +212,10 @@ class DetectiveGame
     # TODO: the killer shouldn't necessarily have more signals, but you should
     # be able to rule out people with more signals or better signals than him/her.
     @killer.evidence_count += 1
-    Logger.debug "Signal distribution: #{non_victims}"
+    Logger.debug "Initial distribution: #{non_victims} v=#{non_victims.collect { |n| n.evidence_count }.variance}"
+    initial_sum = 0
+    non_victims.map { |n| initial_sum += n.evidence_count }
+    
     non_victims.each { |n| n.augment_profile }
     @victim.evidence_count = rand(2) # 0 or 1 signal
     @victim.augment_profile
@@ -185,9 +227,39 @@ class DetectiveGame
     
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
     Logger.debug "Murder weapon: #{@murder_weapon}"
+    
+    Logger.debug '-' * 80
+    Logger.debug "Final distribution: #{non_victims}"    
+    final_sum = 0
+    non_victims.map { |n| final_sum += n.evidence_count }
+    Logger.debug "Signals consumed: #{initial_sum - final_sum}"
   end
   
   private
+  
+  def max_evidence_npc(npcs)
+    max_npc = npcs.first
+    
+    npcs.each do |n|
+      if n.evidence_count > max_npc.evidence_count
+        max_npc = n
+      end
+    end
+    
+    return max_npc
+  end
+  
+  def min_evidence_npc(npcs)
+    min_npc = npcs.first
+    
+    npcs.each do |n|
+      if n.evidence_count < min_npc.evidence_count
+        min_npc = n
+      end
+    end
+    
+    return min_npc
+  end
   
   def generate_killers_alibi(non_killers)
     data = ExternalData::instance

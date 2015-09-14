@@ -72,9 +72,6 @@ class SuspectNpc < Npc
     @social_media = generate_social_media_profile
     generate_suspicious_interests
     @messages << "I like #{@social_media[:post_topic]}!"
-    
-    Logger.debug("DONE: #{@name}")
-    Logger.debug "WARNING: EC (#{@evidence_count}) > 0!!" if @evidence_count > 0    
   end
   
   def on_victim(love_or_hate, victim)

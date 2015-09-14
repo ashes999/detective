@@ -24,21 +24,7 @@
     # If they don't have this, their alibi will be an obvious lie (that "I was with
     # person X"), which person X will not reciprocate. This is mostly cosmetic.
     "alone_alibi_probability": 30,
-    
-    ###
-    # Start evidence-related probability
-    ###
-    
-    # The probability we generate a pool of blood of an NPC in the mansion
-    # (max is two of these pools)
-    "npc_blood_pool_probability": 100,
-    
-    # The probability that we generate a pool of the victim's blood in the house
-    # of one of the NPCs.
-    "victims_blood_pool_probability": 100,
-    
-    # The probability of an NPC's fingerprints in the mansion (murder site)
-    "fingerprints_probability": 100,
+
     # Probability the prints are good, and the person is in the DB, so we can match 'em
     "fingerprints_match": 70,
     

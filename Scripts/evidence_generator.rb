@@ -40,7 +40,7 @@ class EvidenceGenerator
       
       Logger.debug("Generating evidence for #{npc.name} ...")
       # NPC's blood in the mansion
-      if npc.evidence_count >= 1 && rand(100) <= data.get(:npc_blood_pool_probability) && npc_blood_spawned < MAX_SPAWNS[:npc_blood_pool]        
+      if npc.evidence_count >= 1 && npc_blood_spawned < MAX_SPAWNS[:npc_blood_pool]        
         # spawn a pool of blood
         e = BloodPool.new
         e.map_id = mansion_map_id
@@ -53,7 +53,7 @@ class EvidenceGenerator
       end
       
       # Victim's blood in the NPC's house/location
-      if npc.evidence_count >= 2 && rand(100) <= data.get(:victims_blood_pool_probability) && victims_blood_spawned < MAX_SPAWNS[:victims_blood_pool]
+      if npc.evidence_count >= 2 && victims_blood_spawned < MAX_SPAWNS[:victims_blood_pool]
         e = BloodPool.new
         e.map_id = npc.map_id
         e.template_id = EVENT_IDS[:npc_blood_pool]
@@ -65,7 +65,7 @@ class EvidenceGenerator
       end
       
       # NPC's fingerprints in the mansion
-      if npc.evidence_count > 0 && rand(100) <= data.get(:fingerprints_probability) && fingerprints_spawned < MAX_SPAWNS[:fingerprints]
+      if npc.evidence_count > 0 && fingerprints_spawned < MAX_SPAWNS[:fingerprints]
         e = Fingerprints.new
         e.map_id = mansion_map_id
         e.template_id = EVENT_IDS[:fingerprints]

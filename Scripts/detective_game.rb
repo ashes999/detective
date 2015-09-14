@@ -184,7 +184,7 @@ class DetectiveGame
         max.evidence_count -= 1
         min.evidence_count += 1        
       else
-        # Increase variance. Increase the min by one and decrease someone random by one.
+        # Increase variance. Take two random people and swap. It works. Somehow.
         r1 = non_victims.sample
         r2 = (non_victims - [r1]).sample
         Logger.debug "\tVariance too low; swapping #{r1} with #{r2}"

@@ -1,7 +1,7 @@
 require 'scripts/logger'
 require 'scripts/npc_spawner'
 require 'scripts/name_generator'
-require 'scripts/ui/profiles_scene'
+
 require 'scripts/models/notebook'
 require 'scripts/models/suspect_npc'
 require 'scripts/api/vxace_api'
@@ -9,8 +9,13 @@ require 'scripts/utils/external_data'
 require 'scripts/evidence_generator'
 require 'scripts/utils/enumerable_math'
 
-# Not directly used here, but just load them up please. Thanks.
+# Not directly used here, but just load them here so that they're defined when needed.
 require 'scripts/utils/json_parser'
+require 'scripts/ui/profiles_scene'
+require 'scripts/mods/scan_items'
+
+Font.default_name = ['ArabType']
+Font.default_size = 22
 
 class DetectiveGame
 

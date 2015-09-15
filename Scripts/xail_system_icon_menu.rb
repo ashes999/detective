@@ -45,13 +45,14 @@ module XAIL
     #MENU_LIST << ["Equip", "Change your equipment.", :equip, :command_equip, 170, true]
     #MENU_LIST << ["Skills", "Manage your available skills.", :skill, :command_skill, 112, true]
     MENU_LIST << ["Item", "Browse through your acquired items.", :item, :command_item, 264, true]
+    #MENU_LIST << ["Scanner", "Scan your acquired items for evidence.", :item, :command_custom, 143, true, Scene_Scanner]
     #MENU_LIST << ["Status", "See the current status of the hero.", :status, :command_status, 122, true]
     # The custom profile page!
     MENU_LIST << ["Profiles", "Browse through suspect profiles.", :profiles, :command_custom, 224, true, Scene_Profiles]
     MENU_LIST << ["Save", "Record your progress.", :save, :command_save, 337, true]
     MENU_LIST << ["Load", "Load your saved progress.", :load, :command_custom, 230,   true, Scene_Load]
     #MENU_LIST << ["Title", "Return to title.", :title, :command_custom, 12, true, Scene_Title]
-    MENU_LIST << ["Quit", "Quit the game.", :game_end, :command_game_end, 1,   true]    
+    MENU_LIST << ["Quit", "Quit the game.", :game_end, :command_game_end, 1,   true]
 
     # If MENU_CUSTOM is true you will have to add the commands yourself
     # ingame, which can be useful for certain quest related stuff or if you

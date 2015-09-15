@@ -6,16 +6,24 @@ class Notebook
     :innocent => 2
   }
   
+  attr_accessor :murder_weapon_evidence
+  
   def self.STATUS_MAP
     return STATUS_MAP
   end
   
-  def initialize(npcs)
+  def initialize
+    @npcs = []
+    @npc_status = []
+    @notes = []
+    @murder_weapon_evidence = []
+  end
+  
+  def npcs=(npcs)
     raise 'Can\'t create notebook without NPCs' if npcs.nil? || npcs.count == 0
     @npcs = npcs
-    @notes = []
-    # Profiles screen just has the NPC index. Blurgh.
-    @npc_status = []
+    
+    # Profiles screen just has the NPC index. Blurgh.    
     npcs.each do |n|
       @npc_status << :unknown # start out being unknown
     end
@@ -36,13 +44,25 @@ class Notebook
     return to_return
   end
   
-  def notes_for(npc_index)
-    npc_name = @npcs[npc_index].name
+  def show_murder_weapon_notes
+    @murder_weapon_evidence.map { |e| @notes << e }
+  end
+  
+  def notes_for(who_or_what)
+    if who_or_what.key?(:npc_index)
+      npc_index = who_or_what[:npc_index]
+      name = @npcs[npc_index].name      
+    elsif who_or_what.key?(:name)
+      # item name? person name? dun matter, yo.
+      name = who_or_what[:name]
+    else
+      raise "Not sure how to get notes for #{who_or_what}. Consider sending in :npc_index or :name"
+    end
+    
     to_return = ''
     @notes.each do |n|
-      # match the name with word-boundaries (full word)
-      # only notes from this person as the speaker
-      to_return = "#{to_return}#{n}\n" if n.match(/\b#{npc_name}\b/)
+      # match the name with word-boundaries (full word)      
+      to_return = "#{to_return}#{n}\n" if n.match(/\b#{name}\b/)
     end
     return to_return
   end

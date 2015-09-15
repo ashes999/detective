@@ -96,7 +96,7 @@ class Window_SuspectsList < Window_HorzCommand
     @status_window.select(data)
     
     @details_window.refresh # clears the old text    
-    notes = DetectiveGame::instance.notebook.notes_for(index)
+    notes = DetectiveGame::instance.notebook.notes_for(:npc_index => index)
     profile = DetectiveGame::instance.npcs[index].profile
     text = "#{notes}#{profile}"
     @details_window.draw_text_ex(0, 0, text)

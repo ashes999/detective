@@ -14,8 +14,8 @@ require 'scripts/utils/json_parser'
 require 'scripts/ui/profiles_scene'
 require 'scripts/mods/scan_items'
 
-Font.default_name = ['ArabType']
-Font.default_size = 22
+#Font.default_name = ['ArabType']
+#Font.default_size = 22
 
 class DetectiveGame
 
@@ -66,11 +66,13 @@ class DetectiveGame
     num_npcs = (range * difficulty / 10.0).round    
     num_npcs = rand(range) + min_npcs
     Logger.debug "Generating #{num_npcs} npcs; range was #{min_npcs} to #{max_npcs}"
+    @notebook = Notebook.new
     
     generate_npcs(num_npcs)
     generate_scenario(difficulty) 
     
-    @notebook = Notebook.new(@npcs)
+    @notebook.npcs = @npcs
+    Logger.debug "!!! Notebook is #{@notebook}"
     DataManager.set(DATA_KEY, self)
   end
   
@@ -228,7 +230,7 @@ class DetectiveGame
     # Everyone needs an alibi. Weak alibis are a signal.
     generate_killers_alibi(non_killers)
     generate_alibis(non_killers)
-    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID)
+    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID, @notebook)
     
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
     Logger.debug "Murder weapon: #{@murder_weapon}"
@@ -238,6 +240,13 @@ class DetectiveGame
     final_sum = 0
     non_victims.map { |n| final_sum += n.evidence_count }
     Logger.debug "Signals consumed: #{initial_sum - final_sum}"
+  end
+  
+  def player_has_murder_weapon?
+    $game_party.items.each do |i|
+      return true if i.name.downcase == @murder_weapon.downcase
+    end
+    return false
   end
   
   private

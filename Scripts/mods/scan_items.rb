@@ -1,12 +1,16 @@
 class Window_HelpScanner < Window_Help
-  def set_text(text)
+  def set_item(item)  
     super
-    Logger.log "Text is now #{@text}" # may be set to '' when changing menus
+    @item = item
   end
   
-  def set_item(item)
+  def set_text(text)
+    if !@item.nil?
+      notebook = DetectiveGame::instance.notebook
+      notes = notebook.notes_for(:name => @item.name)    
+      text = "#{text}\n#{notes}"      
+    end
     super
-    Logger.log "Setting item to #{item.name}" unless item.nil?
   end
 end
 

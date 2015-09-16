@@ -14,8 +14,8 @@ require 'scripts/utils/json_parser'
 require 'scripts/ui/profiles_scene'
 require 'scripts/mods/scan_items'
 
-#Font.default_name = ['ArabType']
-#Font.default_size = 22
+Font.default_name = ['ArabType']
+Font.default_size = 22
 
 class DetectiveGame
 
@@ -111,6 +111,14 @@ class DetectiveGame
     @npcs.each { |n| NpcSpawner.spawn(n) if n.map_id == Game_Map::instance.map_id  }
     @evidences.each { |e| NpcSpawner.spawn(e) if e.map_id == Game_Map::instance.map_id }
   end
+  
+  def player_has_murder_weapon?
+    $game_party.items.each do |i|
+      return true if i.name.downcase == @murder_weapon.downcase
+    end
+    return false
+  end
+  
   
   private  
   
@@ -241,15 +249,6 @@ class DetectiveGame
     non_victims.map { |n| final_sum += n.evidence_count }
     Logger.debug "Signals consumed: #{initial_sum - final_sum}"
   end
-  
-  def player_has_murder_weapon?
-    $game_party.items.each do |i|
-      return true if i.name.downcase == @murder_weapon.downcase
-    end
-    return false
-  end
-  
-  private
   
   def max_evidence_npc(npcs)
     max_npc = npcs.first

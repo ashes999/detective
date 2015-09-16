@@ -14,7 +14,7 @@ class EvidenceGenerator
   end
   
   # TODO: convert inputs into a hash if this continues to grow  
-  def self.distribute_evidence(non_victims, victim, npc_maps, mansion_map_id, notebook)
+  def self.distribute_evidence(non_victims, victim, npc_maps, mansion_map_id, notebook, murder_weapon)
     raise 'Notebook is nil' if notebook.nil?
     # An array of stuff that we need to spawn on the corresponding map.
     # This includes things like fingerprints, pools of blood, etc.
@@ -93,7 +93,7 @@ class EvidenceGenerator
       # We do this five times, right? The chance of failure (never happens) is n^5 = 0.1. N = 0.37
       if npc.evidence_count >= 2 && rand(100) <= 37 && blood_on_weapon < MAX_SPAWNS[:npc_blood_on_murder_weapon]
         npc.evidence_count -= 2 # strong signal
-        e = "\t#{npc.name}'s blood is on the murder weapon."
+        e = "\t#{npc.name}'s blood is on the #{murder_weapon}."
         notebook.murder_weapon_evidence << e
         Logger.debug e        
         blood_on_weapon += 1
@@ -103,7 +103,7 @@ class EvidenceGenerator
       # We do this five times, right? The chance of failure (never happens) is n^5 = 0.1. N = 0.37
       if npc.evidence_count >= 2 && rand(100) <= 37 && fingerprints_on_weapon < MAX_SPAWNS[:npc_fingerprints_on_murder_weapon]
         npc.evidence_count -= 2 # strong signal
-        e = "\t#{npc.name}'s fingerprints are on the murder weapon."
+        e = "\t#{npc.name}'s fingerprints are on the #{murder_weapon}."
         notebook.murder_weapon_evidence << e
         Logger.debug e
         fingerprints_on_weapon += 1

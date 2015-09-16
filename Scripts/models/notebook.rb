@@ -45,7 +45,9 @@ class Notebook
   end
   
   def show_murder_weapon_notes
-    @murder_weapon_evidence.map { |e| @notes << e }
+    text = ''
+    @murder_weapon_evidence.map { |e| text = "#{text}#{e}\n" }
+    Game_Interpreter::instance.show_message(text)
   end
   
   def notes_for(who_or_what)

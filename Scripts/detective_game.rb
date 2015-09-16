@@ -12,7 +12,6 @@ require 'scripts/utils/enumerable_math'
 # Not directly used here, but just load them here so that they're defined when needed.
 require 'scripts/utils/json_parser'
 require 'scripts/ui/profiles_scene'
-require 'scripts/mods/scan_items'
 
 Font.default_name = ['ArabType']
 Font.default_size = 22
@@ -72,7 +71,6 @@ class DetectiveGame
     generate_scenario(difficulty) 
     
     @notebook.npcs = @npcs
-    Logger.debug "!!! Notebook is #{@notebook}"
     DataManager.set(DATA_KEY, self)
   end
   
@@ -118,7 +116,6 @@ class DetectiveGame
     end
     return false
   end
-  
   
   private  
   
@@ -238,10 +235,11 @@ class DetectiveGame
     # Everyone needs an alibi. Weak alibis are a signal.
     generate_killers_alibi(non_killers)
     generate_alibis(non_killers)
-    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID, @notebook)
     
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
     Logger.debug "Murder weapon: #{@murder_weapon}"
+    
+    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID, @notebook, @murder_weapon)
     
     Logger.debug '-' * 80
     Logger.debug "Final distribution: #{non_victims}"    

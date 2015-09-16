@@ -71,7 +71,6 @@ class DetectiveGame
     generate_scenario(difficulty) 
     
     @notebook.npcs = @npcs
-    Logger.debug "!!! Notebook is #{@notebook}"
     DataManager.set(DATA_KEY, self)
   end
   
@@ -184,7 +183,7 @@ class DetectiveGame
     @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
     Logger.debug "Murder weapon: #{@murder_weapon}"
     
-    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID, @notebook, @murder_weapon)
+    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID, @notebook, POTENTIAL_MURDER_WEAPONS, @murder_weapon)
     
     Logger.debug '-' * 80
     Logger.debug "Final distribution: #{non_victims}"    

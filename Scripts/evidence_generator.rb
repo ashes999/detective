@@ -4,7 +4,7 @@ class EvidenceGenerator
 
   # The maximum number of evidence to spawn/cause, per type
   MAX_SPAWNS = { :npc_blood_pool => 2, :fingerprints => 3, :victims_blood_pool => 1,
-  :npc_blood_on_murder_weapon => 1, :npc_fingerprints_on_murder_weapon => 1,
+  :npc_blood_on_weapon => 2, :npc_fingerprints_on_weapon => 2,
   :resist_talking => 2, :flee_talking => 1, :block_entrance => 1  }
   # IDs of events we copy to spawn these
   EVENT_IDS = { :npc_blood_pool => 2, :fingerprints => 3 }
@@ -14,7 +14,7 @@ class EvidenceGenerator
   end
   
   # TODO: convert inputs into a hash if this continues to grow  
-  def self.distribute_evidence(non_victims, victim, npc_maps, mansion_map_id, notebook, murder_weapon)
+  def self.distribute_evidence(non_victims, victim, npc_maps, mansion_map_id, notebook, murderable_weapons, murder_weapon)
     raise 'Notebook is nil' if notebook.nil?
     # An array of stuff that we need to spawn on the corresponding map.
     # This includes things like fingerprints, pools of blood, etc.
@@ -25,12 +25,12 @@ class EvidenceGenerator
     ###    
     # These signals are limited (eg. only one pool of the victim's blood)
     ###
-    npc_blood_spawned = 0       # NPC's blood in the mansion
-    victims_blood_spawned = 0   # Victim's blood in NPC's house/location
-    fingerprints_spawned = 0    # NPC's fingerprints in the mansion
-    blood_on_weapon = 0         # NPC's blood on the murder weapon
-    fingerprints_on_weapon = 0  # NPC's fingerprints are on the murder weapon
-    resisting_talking = 0       # NPC won't talk to you for the first 2-3 times.
+    npc_blood_spawned = 0         # NPC's blood in the mansion
+    victims_blood_spawned = 0     # Victim's blood in NPC's house/location
+    fingerprints_spawned = 0      # NPC's fingerprints in the mansion
+    npc_bloodied_weapons = 0      # NPC's blood on the weapon
+    npc_fingerprints_weapons = 0  # NPC's fingerprints are on the weapon
+    resisting_talking = 0         # NPC won't talk to you for the first 2-3 times.
     
     data = ExternalData::instance
     non_victims.each do |npc|
@@ -89,25 +89,47 @@ class EvidenceGenerator
         fingerprints_spawned += 1        
       end
       
-      # NPC's blood on the murder weapon
+      # Victim's blood is always on the murder weapon.
+      notebook.murder_weapon_evidence << "#{victim.name}'s blood is on the #{murder_weapon}."
+      
+      # NPC's blood on the non-murder weapon
       # We do this five times, right? The chance of failure (never happens) is n^5 = 0.1. N = 0.37
-      if npc.evidence_count >= 2 && rand(100) <= 37 && blood_on_weapon < MAX_SPAWNS[:npc_blood_on_murder_weapon]
-        npc.evidence_count -= 2 # strong signal
-        e = "\t#{npc.name}'s blood is on the #{murder_weapon}."
+      if npc.evidence_count > 0 && npc_bloodied_weapons < MAX_SPAWNS[:npc_blood_on_weapon]
+        weapon = murderable_weapons.sample
+        
+        if weapon == murder_weapon && npc.evidence_count >= 2
+          npc.evidence_count -= 2 # strong signal
+        else
+          weapon = murderable_weapons.sample while weapon == murder_weapon
+          npc.evidence_count -= 1
+        end
+        
+        e = "#{npc.name}'s blood is on the #{weapon}."
         notebook.murder_weapon_evidence << e
-        Logger.debug e        
-        blood_on_weapon += 1
+        Logger.debug "\t#{e}"        
+        npc_bloodied_weapons += 1
       end
       
       # NPC's fingerprints on the murder weapon
       # We do this five times, right? The chance of failure (never happens) is n^5 = 0.1. N = 0.37
-      if npc.evidence_count >= 2 && rand(100) <= 37 && fingerprints_on_weapon < MAX_SPAWNS[:npc_fingerprints_on_murder_weapon]
-        npc.evidence_count -= 2 # strong signal
-        e = "\t#{npc.name}'s fingerprints are on the #{murder_weapon}."
+      if npc.evidence_count > 0 && npc_fingerprints_weapons < MAX_SPAWNS[:npc_fingerprints_on_weapon]
+        weapon = murderable_weapons.sample
+        
+        if weapon == murder_weapon && npc.evidence_count >= 2
+          npc.evidence_count -= 2 # strong signal          
+        else
+          weapon = murderable_weapons.sample while weapon == murder_weapon
+          npc.evidence_count -= 1
+        end
+        
+        e = "#{npc.name}'s fingerprints are on the #{weapon}."
         notebook.murder_weapon_evidence << e
-        Logger.debug e
-        fingerprints_on_weapon += 1
+        Logger.debug "\t#{e}"
+        npc_fingerprints_weapons += 1
       end
+      
+      # Not sure why we get lots of duplicates here.
+      notebook.murder_weapon_evidence.uniq!
       
       if npc.evidence_count > 0 && rand(100) <= 50
         npc.on_victim(:hate, victim)

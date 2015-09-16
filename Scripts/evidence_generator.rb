@@ -120,16 +120,6 @@ class EvidenceGenerator
         npc.resist_talking
         npc.evidence_count -= 1
       end
-      
-      ###
-      # These signals can occur unlimited times (eg. refusal to talk) across all NPCs.
-      ###
-      # Refusal to talk (yes/no, or no after you hear everything they say)
-      # Their perspective on the deceased
-      # Run type: 
-      #  - Avoid you subtly (every other step)
-      #  - Block you from coming in, without evidence
-      #  - Run away from you, fast and furiously
     end
     
     return evidence

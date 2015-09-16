@@ -13,8 +13,8 @@ require 'scripts/utils/enumerable_math'
 require 'scripts/utils/json_parser'
 require 'scripts/ui/profiles_scene'
 
-Font.default_name = ['ArabType']
-Font.default_size = 22
+#Font.default_name = ['ArabType']
+#Font.default_size = 22
 
 class DetectiveGame
 
@@ -71,6 +71,7 @@ class DetectiveGame
     generate_scenario(difficulty) 
     
     @notebook.npcs = @npcs
+    Logger.debug "!!! Notebook is #{@notebook}"
     DataManager.set(DATA_KEY, self)
   end
   
@@ -109,7 +110,7 @@ class DetectiveGame
     @npcs.each { |n| NpcSpawner.spawn(n) if n.map_id == Game_Map::instance.map_id  }
     @evidences.each { |e| NpcSpawner.spawn(e) if e.map_id == Game_Map::instance.map_id }
   end
-  
+    
   def player_has_murder_weapon?
     $game_party.items.each do |i|
       return true if i.name.downcase == @murder_weapon.downcase
@@ -161,14 +162,39 @@ class DetectiveGame
     Logger.debug "Killer: #{@killer.name}"
     
     non_victims = @npcs - [@victim]
-    non_killers = non_victims - [@killer]
-        
+    non_killers = non_victims - [@killer]       
     non_killers.shuffle!
     
     num_signals = 3 + (2 * difficulty)
     evidence_counts = {}
+    generate_signals_and_profiles(num_signals, non_victims, difficulty)
     
-    ###
+    Logger.debug "Initial distribution: #{non_victims} v=#{non_victims.collect { |n| n.evidence_count }.variance}"
+    initial_sum = 0
+    non_victims.map { |n| initial_sum += n.evidence_count }
+    
+    non_victims.each { |n| n.augment_profile }
+    @victim.evidence_count = rand(2) # 0 or 1 signal
+    @victim.augment_profile
+    
+    # Everyone needs an alibi. Weak alibis are a signal.
+    generate_killers_alibi(non_killers)
+    generate_alibis(non_killers)
+    
+    @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
+    Logger.debug "Murder weapon: #{@murder_weapon}"
+    
+    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID, @notebook, @murder_weapon)
+    
+    Logger.debug '-' * 80
+    Logger.debug "Final distribution: #{non_victims}"    
+    final_sum = 0
+    non_victims.map { |n| final_sum += n.evidence_count }
+    Logger.debug "Signals consumed: #{initial_sum - final_sum}"
+  end
+  
+  def generate_signals_and_profiles(num_signals, non_victims, difficulty)
+  ###
     # Generate a distribution. For now, just randomly add evidence to NPCs, and
     # when we're done, use the variance to tell how difficult it is. A variance
     # of 6 is pretty big (eg. distro is [6, 6, 12]; more than that is too much.
@@ -224,28 +250,6 @@ class DetectiveGame
     # TODO: the killer shouldn't necessarily have more signals, but you should
     # be able to rule out people with more signals or better signals than him/her.
     @killer.evidence_count += 1
-    Logger.debug "Initial distribution: #{non_victims} v=#{non_victims.collect { |n| n.evidence_count }.variance}"
-    initial_sum = 0
-    non_victims.map { |n| initial_sum += n.evidence_count }
-    
-    non_victims.each { |n| n.augment_profile }
-    @victim.evidence_count = rand(2) # 0 or 1 signal
-    @victim.augment_profile
-    
-    # Everyone needs an alibi. Weak alibis are a signal.
-    generate_killers_alibi(non_killers)
-    generate_alibis(non_killers)
-    
-    @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
-    Logger.debug "Murder weapon: #{@murder_weapon}"
-    
-    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID, @notebook, @murder_weapon)
-    
-    Logger.debug '-' * 80
-    Logger.debug "Final distribution: #{non_victims}"    
-    final_sum = 0
-    non_victims.map { |n| final_sum += n.evidence_count }
-    Logger.debug "Signals consumed: #{initial_sum - final_sum}"
   end
   
   def max_evidence_npc(npcs)

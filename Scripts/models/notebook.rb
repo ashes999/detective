@@ -46,7 +46,10 @@ class Notebook
   
   def show_murder_weapon_notes
     text = ''
-    @murder_weapon_evidence.map { |e| text = "#{text}#{e}\n" }
+    @murder_weapon_evidence.each do |e|
+      note(e)
+      text = "#{text}#{e}\n"
+    end
     Game_Interpreter::instance.show_message(text)
   end
   

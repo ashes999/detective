@@ -76,7 +76,6 @@ class DetectiveGame
       @potential_murder_weapons[i.name] = map_id
     end
     
-    Logger.debug "Potential murder weapons (all items): #{@potential_murder_weapons}"
     generate_npcs(num_npcs)
     generate_scenario(difficulty) 
     
@@ -169,6 +168,7 @@ class DetectiveGame
     generate_killers_alibi(non_killers)
     generate_alibis(non_killers)
     
+    murder_weapon_in_whose_house = nil
     # 50% chance to put the murder weapon in the house of an NPC
     if rand(50) <= 100
       # Pick a suitable NPC first
@@ -177,6 +177,7 @@ class DetectiveGame
       # Pick something on their map as the murder weapon
       @murder_weapon = @potential_murder_weapons.select { |weapon, map| map == npc.map_id }.keys.sample
       Logger.debug "Murder weapon (#{npc.name}'s house): #{@murder_weapon}"
+      murder_weapon_in_whose_house = npc
     else
       # goes in the mansion
       @murder_weapon = @potential_murder_weapons.select { |weapon, map| map == MANSION_MAP_ID }.keys.sample
@@ -184,7 +185,7 @@ class DetectiveGame
     end
     
     raise "Something went terribly wrong with murder weapon selection" if @murder_weapon.nil?
-    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, @npc_maps, MANSION_MAP_ID, @notebook, @potential_murder_weapons.keys, @murder_weapon)
+    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, @npc_maps, MANSION_MAP_ID, @notebook, @potential_murder_weapons.keys, @murder_weapon, murder_weapon_in_whose_house)
     
     Logger.debug '-' * 80
     Logger.debug "Final distribution: #{non_victims}"    

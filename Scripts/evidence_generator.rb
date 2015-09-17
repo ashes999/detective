@@ -14,7 +14,8 @@ class EvidenceGenerator
   end
   
   # TODO: convert inputs into a hash if this continues to grow  
-  def self.distribute_evidence(non_victims, victim, npc_maps, mansion_map_id, notebook, murderable_weapons, murder_weapon)
+  # murder_weapon_in_whose_house => nil (murder weapon is in the mansion) or an NPC (in whose house we found the murder weapon)
+  def self.distribute_evidence(non_victims, victim, npc_maps, mansion_map_id, notebook, murderable_weapons, murder_weapon, murder_weapon_in_whose_house)
     raise 'Notebook is nil' if notebook.nil?
     # An array of stuff that we need to spawn on the corresponding map.
     # This includes things like fingerprints, pools of blood, etc.
@@ -91,7 +92,11 @@ class EvidenceGenerator
       end
       
       # Victim's blood is always on the murder weapon.
-      notebook.murder_weapon_evidence << "#{victim.name}'s blood is on the #{murder_weapon}."
+      e = "#{victim.name}'s blood is on the #{murder_weapon}"
+      e += ", which was in #{murder_weapon_in_whose_house.name}'s house" unless murder_weapon_in_whose_house.nil?
+      e += '.'
+      notebook.murder_weapon_evidence << e
+      Logger.debug(e)
       
       # NPC's blood on the non-murder weapon
       # We do this five times, right? The chance of failure (never happens) is n^5 = 0.1. N = 0.37

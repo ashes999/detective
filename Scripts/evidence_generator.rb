@@ -33,6 +33,7 @@ class EvidenceGenerator
     resisting_talking = 0         # NPC won't talk to you for the first 2-3 times.
     
     data = ExternalData::instance
+    
     non_victims.each do |npc|
       # TODO: new algorithm for this, no more random
       # 1) Pick the distribution of signals by NPC. This depends on the total.
@@ -141,8 +142,8 @@ class EvidenceGenerator
       if npc.evidence_count > 0 && resisting_talking < MAX_SPAWNS[:resist_talking]
         npc.resist_talking
         npc.evidence_count -= 1
-      end
-    end
+      end      
+    end    
     
     return evidence
   end  

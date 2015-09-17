@@ -22,6 +22,7 @@ class DetectiveGame
   # 7-14 are House1-House8
   MANSION_MAP_ID = 1 # Mansion1
   NPC_MAPS = (7..14).to_a + [MANSION_MAP_ID]
+  MAP_ID_REGEX = /map (\d+)/i
 
   # The key for storing this game's data in our save-game.
   DATA_KEY = :detective_game
@@ -51,6 +52,7 @@ class DetectiveGame
     
     difficulty = ExternalData::instance.get(:difficulty)
     raise "Difficulty (#{difficulty}) should be in the range of 1-10" if difficulty < 1 || difficulty > 10
+    @npc_maps = NPC_MAPS.clone
     
     min_npcs = ExternalData::instance.get(:min_number_of_npcs)
     max_npcs = ExternalData::instance.get(:max_number_of_npcs)
@@ -63,8 +65,17 @@ class DetectiveGame
     Logger.debug "Generating #{num_npcs} npcs; range was #{min_npcs} to #{max_npcs}"
     @notebook = Notebook.new
     
-    @potential_murder_weapons = $data_items.collect { |i| i.name unless i.nil? }   
-    @potential_murder_weapons.compact! # no nils please
+    # Hash of item_name => map_id (from note)
+    @potential_murder_weapons = {}    
+    $data_items.each do |i|
+      # Nils in the array so strip out nils; also, no note = not specified to a map id = not a murder weapon
+      next if i.nil? || i.note == ''
+      match = MAP_ID_REGEX.match(i.note)
+      raise "Item #{i} has note #{i.note} which doesn't have a map id!" if match.nil?
+      map_id = match[1].to_i
+      @potential_murder_weapons[i.name] = map_id
+    end
+    
     Logger.debug "Potential murder weapons (all items): #{@potential_murder_weapons}"
     generate_npcs(num_npcs)
     generate_scenario(difficulty) 
@@ -99,7 +110,7 @@ class DetectiveGame
   def show_murder_weapons_list
     Game_Interpreter.instance.show_message('What\'s the murder weapon?', :wait => false)
     weapons_list = ['Cancel']
-    @potential_murder_weapons.map { |w| weapons_list << w }
+    @potential_murder_weapons.map { |name, map_id| weapons_list << name }
     choice = Game_Interpreter.instance.show_choices(weapons_list, { :cancel_index => 0, :return_type => :name})
     return choice
   end
@@ -116,8 +127,9 @@ class DetectiveGame
     @npcs = []
     
     num_npcs.times do
-      # Decide on a random map where this NPC appears
-      map_id = NPC_MAPS.sample
+      # Decide on a random map where this NPC appears. One NPC per map.
+      map_id = @npc_maps.sample
+      @npc_maps -= [map_id]
       name = NameGenerator::generate_name
       @npcs << SuspectNpc.new(map_id, name)
       Logger.debug "#{@npcs[-1].name} is on map #{map_id}"
@@ -157,10 +169,22 @@ class DetectiveGame
     generate_killers_alibi(non_killers)
     generate_alibis(non_killers)
     
-    @murder_weapon = @potential_murder_weapons.sample
-    Logger.debug "Murder weapon: #{@murder_weapon}"
+    # 50% chance to put the murder weapon in the house of an NPC
+    if rand(50) <= 100
+      # Pick a suitable NPC first
+      npc = non_victims.select { |n| n.evidence_count >= 2 }.sample
+      npc.evidence_count -= 2
+      # Pick something on their map as the murder weapon
+      @murder_weapon = @potential_murder_weapons.select { |weapon, map| map == npc.map_id }.keys.sample
+      Logger.debug "Murder weapon (#{npc.name}'s house): #{@murder_weapon}"
+    else
+      # goes in the mansion
+      @murder_weapon = @potential_murder_weapons.select { |weapon, map| map == MANSION_MAP_ID }.keys.sample
+      Logger.debug "Murder weapon (mansion): #{@murder_weapon}"
+    end
     
-    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID, @notebook, @potential_murder_weapons, @murder_weapon)
+    raise "Something went terribly wrong with murder weapon selection" if @murder_weapon.nil?
+    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, @npc_maps, MANSION_MAP_ID, @notebook, @potential_murder_weapons.keys, @murder_weapon)
     
     Logger.debug '-' * 80
     Logger.debug "Final distribution: #{non_victims}"    
@@ -186,7 +210,6 @@ class DetectiveGame
     epsilon = 1
     v = non_victims.collect { |n| n.evidence_count }.variance
     Logger.debug "Target variance is #{target_variance}; starting with #{v}..."
-    Logger.debug "\tEarliest distro is #{non_victims}"
     
     # Not within epsilon? we need to tweak variance.
     while (v - target_variance).abs >= epsilon
@@ -194,22 +217,20 @@ class DetectiveGame
         # Decrease variance. Decrease the max by one and increase the min by one.
         max = max_evidence_npc(non_victims)
         min = min_evidence_npc(non_victims)
-        Logger.debug "\tVariance too high; swapping #{max} with #{min}"
         max.evidence_count -= 1
         min.evidence_count += 1        
       else
         # Increase variance. Take two random people and swap. It works. Somehow.
         r1 = non_victims.sample
         r2 = (non_victims - [r1]).sample
-        Logger.debug "\tVariance too low; swapping #{r1} with #{r2}"
         r1.evidence_count -= 1
         r2.evidence_count += 1
       end
       
-      v = non_victims.collect { |n| n.evidence_count }.variance
-      Logger.debug "New v=#{v}"
+      v = non_victims.collect { |n| n.evidence_count }.variance      
     end
-    
+    Logger.debug "Final variance is #{target_variance}; v=#{v}"
+        
     #
     ### End distribution
     

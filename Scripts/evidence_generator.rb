@@ -4,10 +4,10 @@ class EvidenceGenerator
 
   # The maximum number of evidence to spawn/cause, per type
   MAX_SPAWNS = { :npc_blood_pool => 2, :fingerprints => 3, :victims_blood_pool => 1,
-  :npc_blood_on_weapon => 2, :npc_fingerprints_on_weapon => 2,
-  :resist_talking => 2, :flee_talking => 1, :block_entrance => 1  }
+  :npc_blood_on_weapon => 3, :npc_fingerprints_on_weapon => 3, :resist_talking => 2 }
+  
   # IDs of events we copy to spawn these
-  EVENT_IDS = { :npc_blood_pool => 2, :fingerprints => 3 }
+  EVENT_IDS = { :blood_pool => 2, :fingerprints => 3 }
   
   def initialize
     raise 'Static class!'
@@ -21,56 +21,56 @@ class EvidenceGenerator
     # This includes things like fingerprints, pools of blood, etc.
     evidence = []
     
-    # TODO: randomize the order of these
-    
-    ###    
-    # These signals are limited (eg. only one pool of the victim's blood)
-    ###
-    npc_blood_spawned = 0         # NPC's blood in the mansion
-    victims_blood_spawned = 0     # Victim's blood in NPC's house/location
-    fingerprints_spawned = 0      # NPC's fingerprints in the mansion
-    npc_bloodied_weapons = 0      # NPC's blood on the weapon
-    npc_fingerprints_weapons = 0  # NPC's fingerprints are on the weapon
-    resisting_talking = 0         # NPC won't talk to you for the first 2-3 times.
+    evidence_available = []
+    MAX_SPAWNS.each do |evidence, max_spawns|
+      max_spawns.times do
+        evidence_available << evidence
+      end    
+    end
     
     data = ExternalData::instance
+    evidence_per_npc = (evidence_available.count / non_victims.count).ceil
     
     non_victims.each do |npc|
-      # TODO: new algorithm for this, no more random
-      # 1) Pick the distribution of signals by NPC. This depends on the total.
-      #    eg. for D=10, n=4, we get 7, 6, 6 vs. 5, 4, 3, 3, 2, 2
-      # 2) Distribute the 19 possible signals we have to those NPCs in that distro.
-      #    Make sure it's a random subset, not that the killer always gets "victim_blood_pool".
-      # 3) Profit
+      # Pick a random set of evidence for this NPC, in the amount they should have.
+      # Don't allow duplicates. If we didn't get enough items, s'ok, we'll consume
+      # the rest of the evidence_count when we generate personality/discussion stuff.
+      # Similarly, if we don't have enough evidence_count for something, put it
+      # back in the pool, and move on.
       
-      Logger.debug("Generating evidence for #{npc.name} ...")
+      # Pad by +1 in the hope of getting more uniques
+      npcs_evidence = evidence_available.sample(evidence_per_npc + 1).uniq
+      evidence_available -= npcs_evidence
+      
+      Logger.debug("Generating evidence for #{npc.name}; their draw of #{evidence_per_npc}: #{npcs_evidence}")
+      
       # NPC's blood in the mansion
-      if npc.evidence_count >= 1 && npc_blood_spawned < MAX_SPAWNS[:npc_blood_pool]        
+      if npc.evidence_count >= 1 && npcs_evidence.include?(:npc_blood_pool)
         # spawn a pool of blood
         e = BloodPool.new
         e.map_id = mansion_map_id
-        e.template_id = EVENT_IDS[:npc_blood_pool]
+        e.template_id = EVENT_IDS[:blood_pool]
         e.blood_type = npc.blood_type
         npc.evidence_count -= 1
-        evidence << e
-        npc_blood_spawned += 1
+        evidence << e        
         Logger.debug("\tGenerated a pool of #{npc.name}'s blood type (#{npc.blood_type}) in the mansion.")
+        npcs_evidence.delete(:npc_blood_pool)
       end
       
       # Victim's blood in the NPC's house/location
-      if npc.evidence_count >= 2 && victims_blood_spawned < MAX_SPAWNS[:victims_blood_pool]
+      if npc.evidence_count >= 2 && npcs_evidence.include?(:victims_blood_pool)
         e = BloodPool.new
         e.map_id = npc.map_id
-        e.template_id = EVENT_IDS[:npc_blood_pool]
+        e.template_id = EVENT_IDS[:blood_pool]
         e.blood_type = victim.blood_type
         npc.evidence_count -= 2
-        evidence << e
-        victims_blood_spawned += 1
+        evidence << e        
         Logger.debug("\tGenerated a pool of the victim's blood (type #{victim.blood_type}) in #{npc.name}'s dwelling.")
+        npcs_evidence.delete(:victims_blood_pool)
       end
       
       # NPC's fingerprints in the mansion
-      if npc.evidence_count > 0 && fingerprints_spawned < MAX_SPAWNS[:fingerprints]
+      if npc.evidence_count > 0 && npcs_evidence.include?(:fingerprints)
         e = Fingerprints.new
         e.map_id = mansion_map_id
         e.template_id = EVENT_IDS[:fingerprints]
@@ -82,13 +82,13 @@ class EvidenceGenerator
           npc.evidence_count -= 1          
           npc.evidence_count -= 1 if e.match_probability >= 70
           Logger.debug("\tGenerated #{npc.name}'s fingerprints in the mansion")
+          npcs_evidence.delete(:fingerprints)
         else
           e.owner = nil
           Logger.debug("\tGenerated useless fingerprints in the mansion")
         end
         
-        evidence << e
-        fingerprints_spawned += 1        
+        evidence << e        
       end
       
       # Victim's blood is always on the murder weapon.
@@ -100,7 +100,7 @@ class EvidenceGenerator
       
       # NPC's blood on the non-murder weapon
       # We do this five times, right? The chance of failure (never happens) is n^5 = 0.1. N = 0.37
-      if npc.evidence_count > 0 && npc_bloodied_weapons < MAX_SPAWNS[:npc_blood_on_weapon]
+      if npc.evidence_count > 0 && npcs_evidence.include?(:npc_blood_on_weapon)
         weapon = murderable_weapons.sample
         
         if weapon == murder_weapon && npc.evidence_count >= 2
@@ -113,12 +113,12 @@ class EvidenceGenerator
         e = "#{npc.name}'s blood is on the #{weapon}."
         notebook.murder_weapon_evidence << e
         Logger.debug "\t#{e}"        
-        npc_bloodied_weapons += 1
+        npcs_evidence.delete(:npc_blood_on_weapon)
       end
       
       # NPC's fingerprints on the murder weapon
       # We do this five times, right? The chance of failure (never happens) is n^5 = 0.1. N = 0.37
-      if npc.evidence_count > 0 && npc_fingerprints_weapons < MAX_SPAWNS[:npc_fingerprints_on_weapon]
+      if npc.evidence_count > 0 && npcs_evidence.include?(:npc_fingerprints_on_weapon)
         weapon = murderable_weapons.sample
         
         if weapon == murder_weapon && npc.evidence_count >= 2
@@ -131,7 +131,7 @@ class EvidenceGenerator
         e = "#{npc.name}'s fingerprints are on the #{weapon}."
         notebook.murder_weapon_evidence << e
         Logger.debug "\t#{e}"
-        npc_fingerprints_weapons += 1
+        npcs_evidence.delete(:npc_fingerprints_on_weapon)
       end
       
       # Not sure why we get lots of duplicates here.
@@ -144,10 +144,16 @@ class EvidenceGenerator
         npc.on_victim(:love, victim)
       end
       
-      if npc.evidence_count > 0 && resisting_talking < MAX_SPAWNS[:resist_talking]
+      if npc.evidence_count > 0 && npcs_evidence.include?(:resist_talking)
         npc.resist_talking
         npc.evidence_count -= 1
-      end      
+        npcs_evidence.delete(:resist_talking)
+      end
+      
+      if !npcs_evidence.empty?
+        Logger.debug "Refunding unusable evidence for #{npc.name}: #{npcs_evidence}"
+        evidence_available += npcs_evidence
+      end
     end    
     
     return evidence

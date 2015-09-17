@@ -74,21 +74,6 @@ class DetectiveGame
     DataManager.set(DATA_KEY, self)
   end
   
-  # Changes the close-up image of the murder weapon to the blood-streaked one
-  def got_magnifying_glass
-    for item in $data_items do
-      next if item.nil?
-      if item.name == @murder_weapon
-        murder_item = item 
-        break
-      end
-    end
-    
-    raise "Can't find item named #{@murder_weapon} for murder weapon" if murder_item.nil?
-    # change big picture in inventory for this item to the blood-splattered one
-    murder_item.image = "inventory\\#{murder_item.name}-blood"
-  end
-  
   def solve_case
     suspect = show_suspects_list
     if suspect != 'Cancel'
@@ -108,13 +93,6 @@ class DetectiveGame
   def spawn_this_maps_npcs
     @npcs.each { |n| NpcSpawner.spawn(n) if n.map_id == Game_Map::instance.map_id  }
     @evidences.each { |e| NpcSpawner.spawn(e) if e.map_id == Game_Map::instance.map_id }
-  end
-    
-  def player_has_murder_weapon?
-    $game_party.items.each do |i|
-      return true if i.name.downcase == @murder_weapon.downcase
-    end
-    return false
   end
   
   private  

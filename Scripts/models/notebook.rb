@@ -46,10 +46,17 @@ class Notebook
   
   def show_murder_weapon_notes
     text = ''
-    @murder_weapon_evidence.each do |e|
-      note(e)
-      text = "#{text}#{e}\n"
+    $game_party.items.each do |i|    
+      show_evidence = false      
+      @murder_weapon_evidence.each do |e|
+        if e.downcase =~ /\b#{i.name}\b/i
+          note(e)
+          text = "#{text}#{e}\n"
+        end
+      end      
     end
+    
+    text = 'Nothing significant found.' if text == ''
     Game_Interpreter::instance.show_message(text)
   end
   

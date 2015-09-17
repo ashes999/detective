@@ -17,10 +17,6 @@ require 'scripts/ui/profiles_scene'
 #Font.default_size = 22
 
 class DetectiveGame
-
-  # TODO: this is updated by hand :(
-  # These are the names of ITEMS in the DB.
-  POTENTIAL_MURDER_WEAPONS = ['Sword', 'Pickaxe', 'Vase', 'Pot', 'Shovel']
   
   # Potential maps to spawn on. Names don't cut it (not accessible through the API), so we use map IDs.
   # 7-14 are House1-House8
@@ -67,11 +63,14 @@ class DetectiveGame
     Logger.debug "Generating #{num_npcs} npcs; range was #{min_npcs} to #{max_npcs}"
     @notebook = Notebook.new
     
+    @potential_murder_weapons = $data_items.collect { |i| i.name unless i.nil? }   
+    @potential_murder_weapons.compact! # no nils please
+    Logger.debug "Potential murder weapons (all items): #{@potential_murder_weapons}"
     generate_npcs(num_npcs)
     generate_scenario(difficulty) 
     
     @notebook.npcs = @npcs
-    DataManager.set(DATA_KEY, self)
+    DataManager.set(DATA_KEY, self)    
   end
   
   def solve_case
@@ -100,7 +99,7 @@ class DetectiveGame
   def show_murder_weapons_list
     Game_Interpreter.instance.show_message('What\'s the murder weapon?', :wait => false)
     weapons_list = ['Cancel']
-    POTENTIAL_MURDER_WEAPONS.map { |w| weapons_list << w }
+    @potential_murder_weapons.map { |w| weapons_list << w }
     choice = Game_Interpreter.instance.show_choices(weapons_list, { :cancel_index => 0, :return_type => :name})
     return choice
   end
@@ -158,10 +157,10 @@ class DetectiveGame
     generate_killers_alibi(non_killers)
     generate_alibis(non_killers)
     
-    @murder_weapon = POTENTIAL_MURDER_WEAPONS.sample
+    @murder_weapon = @potential_murder_weapons.sample
     Logger.debug "Murder weapon: #{@murder_weapon}"
     
-    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID, @notebook, POTENTIAL_MURDER_WEAPONS, @murder_weapon)
+    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, NPC_MAPS, MANSION_MAP_ID, @notebook, @potential_murder_weapons, @murder_weapon)
     
     Logger.debug '-' * 80
     Logger.debug "Final distribution: #{non_victims}"    

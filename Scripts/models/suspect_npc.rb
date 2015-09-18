@@ -15,7 +15,7 @@ class SuspectNpc < Npc
   
   # evidence_count: the number of signals (suspicious information) that this person is the killer.
   # Starts set to some value, and decreases every time we actualize a signal (eg. create weak alibi)
-  attr_accessor :map_id, :age, :profession, :evidence_count, :blood_type
+  attr_accessor :map_id, :age, :profession, :evidence_count, :blood_type  
   
   # move_speed = 1-6
   # move_frequency = 1-5
@@ -30,11 +30,14 @@ class SuspectNpc < Npc
     @age = 20 + rand(15)    
     @profession = ExternalData::instance.get(:professions).sample
     @blood_type = pick_blood_type
-    @evidence_count = 0    
+    @evidence_count = 0
+    
     @messages = [      
       "Isn't it #{['strange', 'scary', 'sad', 'unfortunate'].sample}, what happened?",
       "The weather today #{['sucks', 'rocks', 'is okay', 'bothers me', 'confuses me'].sample}."
     ]
+    
+    @messages_said = []
     
     # After not talking this many times, we willingly talk
     @resist_talking_times = -1    
@@ -55,11 +58,13 @@ class SuspectNpc < Npc
       else
         message = @messages.sample
       end
-      
-      message = "#{@name}: #{message}"
     end
-    Game_Interpreter.instance.show_message(message)
-    DetectiveGame::instance.notebook.note(message)
+    
+    @messages_said << message unless @messages_said.include?(message)
+    Game_Interpreter.instance.show_message("#{@name}: #{message}")
+    DetectiveGame::instance.notebook.note("#{@name}: #{message}")
+    
+    Game_Interpreter.instance.show_message("\\N[1]: I've heard everything #{@name} has to say.") if (@messages - @messages_said).empty?
   end
   
   def profile

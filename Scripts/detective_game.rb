@@ -206,6 +206,7 @@ class DetectiveGame
     
     raise "Something went terribly wrong with murder weapon selection" if @murder_weapon.nil?
     @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, @npc_maps, MANSION_MAP_ID, @notebook, @potential_murder_weapons.keys, @murder_weapon, murder_weapon_in_whose_house)
+    EvidenceGenerator::complete_profiles_with_criminology(non_victims)
     
     Logger.debug '-' * 80
     Logger.debug "Final distribution: #{non_victims}"    

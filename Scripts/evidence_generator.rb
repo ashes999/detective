@@ -157,5 +157,16 @@ class EvidenceGenerator
     end    
     
     return evidence
-  end  
+  end
+  
+  ###
+  # we ran distribute_evidence to generate "hard" evidence, like blood and fingerprints.
+  # Now, if NPCs have any evidence_count left, fill it with criminology signals.
+  # For reference, these come from: https://github.com/deengames/detective/issues/5
+  ###
+  def EvidenceGenerator::complete_profiles_with_criminology(non_victims)
+    c = 0
+    non_victims.map { |n| c += n.evidence_count }
+    Logger.debug "*** Final count: #{c} => #{non_victims}"
+  end
 end

@@ -107,18 +107,38 @@ class DetectiveGame
   private  
   
   def show_murder_weapons_list
-    Game_Interpreter.instance.show_message('What\'s the murder weapon?', :wait => false)
-    weapons_list = ['Cancel']
-    @potential_murder_weapons.map { |name, map_id| weapons_list << name }
-    choice = Game_Interpreter.instance.show_choices(weapons_list, { :cancel_index => 0, :return_type => :name})
+    Game_Interpreter.instance.show_message('\N[1]: The murder weapon is ...', :wait => false)    
+    weapons_list = []
+    $game_party.items.collect { |item| weapons_list << item.name }.compact
+    
+    if (weapons_list.count > 8)
+      # Too big to fit nicely on screen. Batch display it.
+      choice = 'Next' # not used
+      while weapons_list.count > 0 && (choice == 'Next' || choice == 'Cancel')
+        batch = weapons_list[0..7]
+        weapons_list -= batch
+        if weapons_list.count == 0
+          meta = 'Cancel'
+        else
+          meta = 'Next'
+        end
+        batch << meta
+        choice = Game_Interpreter.instance.show_choices(batch, { :cancel_index => batch.length - 1, :return_type => :name})        
+      end
+    else
+      weapons_list << 'Cancel'
+      choice = Game_Interpreter.instance.show_choices(weapons_list, { :cancel_index => weapons_list.length - 1, :return_type => :name})
+    end
+    
     return choice
   end
   
   def show_suspects_list  
-    Game_Interpreter.instance.show_message('Who\'s the killer?', :wait => false)
-    npc_names = ['Cancel']
+    Game_Interpreter.instance.show_message('\N[1]: The killer is ...', :wait => false)
+    npc_names = []
     @npcs.map { |n| npc_names << n.name }
-    choice = Game_Interpreter.instance.show_choices(npc_names, { :cancel_index => 0, :return_type => :name})
+    npc_names << 'Cancel'
+    choice = Game_Interpreter.instance.show_choices(npc_names, { :cancel_index => npc_names.length - 1, :return_type => :name})
     return choice
   end
   

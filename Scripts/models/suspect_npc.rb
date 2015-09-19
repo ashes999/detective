@@ -11,6 +11,7 @@ end
 class SuspectNpc < Npc
     
   RESIST_TALKING_MESSAGES = ['Go away!', 'I don\t have anything to say to you.', 'You a cop? I don\'t talk to cops.', 'We can talk in the presence of my lawyer.', '...']
+  
   WILL_NOW_TALK_MESSAGE = 'Okay, fine, I\'ll talk. What do you want to know?'
   
   ASKABLE_QUESTIONS = {
@@ -77,23 +78,62 @@ class SuspectNpc < Npc
     
     Game_Interpreter.instance.show_message("\\N[1]: I've heard everything #{@name} has to say.") if (@messages - @messages_said).empty?
   end
-  
-  def answer_questions(signals, signal_to_question)
+
+  ###
+  # Given a list of signals (eg. :single, :divorced), map to category.
+  # This is because the player asks a category question, like :family.
+  # So if :single and :divorced are both :family, we want a hash with
+  # :family => ["I'm single", "I'm divorced"]
+  def answer_questions(signals, signal_to_question, signal_to_text)
     @criminology_signals = signals
-    @my_questions = []
+    @evidence_count -= @criminology_signals.count
+    @my_questions = {}
     
     signals.each do |s|
-      question = signal_to_question[s] # eg. :family
-      question = ASKABLE_QUESTIONS[question] # :family => "Tell me about your family."      
-      @my_questions << question unless @my_questions.include?(question)
+      raise "Don't have a question text for #{s}" unless signal_to_text.key?(s)
+      question_text = signal_to_text[s]
+      raise "Not sure the question category of #{s}" unless signal_to_question.key?(s)
+      category = signal_to_question[s] # :divorced => :family      
+      
+      if !@my_questions.key?(category)
+        @my_questions[category] = []
+      end
+      
+      @my_questions[category] << question_text
     end
     
-    Logger.debug "Questions for #{@name} are #{@my_questions}"
+    Logger.debug "\tQuestions for #{@name} are #{@my_questions}"
   end
   
   def show_questions
-    Game_Interpreter::instance.show_message("\\N[1]: So ...", :wait => false)    
-    choice = Game_Interpreter::instance.show_choices(@my_questions + ['Never mind.'], { :cancel_index => @my_questions.length, :return_type => :name})
+    Game_Interpreter::instance.show_message("\\N[1]: So ...", :wait => false)
+    
+    # Given that we have certain questions, eg. :family => "Single", "Divorced",
+    # and we know :family => "Tell me about your family", generate a list of what
+    # we can ask (eg. ["Tell me about your family", ...]) -- uniques only
+    questions_texts = []
+    @my_questions.each do |category, list|
+      raise "We don't have a text for #{category}" unless ASKABLE_QUESTIONS.key?(category)
+      text = ASKABLE_QUESTIONS[category]      
+      questions_texts << text unless questions_texts.include?(text)
+    end
+    
+    questions_texts << 'Never mind.'
+    choice = Game_Interpreter::instance.show_choices(questions_texts, { :cancel_index => questions_texts.length - 1, :return_type => :name})
+    
+    # map choice (eg. "Tell me about your family") to a key (eg. :family)   
+    category = nil
+    ASKABLE_QUESTIONS.each do |key, text|
+      category = key if choice == text      
+    end
+    raise "Can't figure out the question type of #{choice}" if category.nil?
+    
+    # Given :family, append all texts together
+    texts = @my_questions[category]
+    asked = texts.join(' ')
+    m = "#{@name}: #{asked}"
+    Game_Interpreter.instance.show_message(m)
+    DetectiveGame::instance.notebook.note m
   end
   
   def profile

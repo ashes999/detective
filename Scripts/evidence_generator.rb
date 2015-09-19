@@ -16,7 +16,17 @@ class EvidenceGenerator
   # Ask different questions per-person, based on their criminology signals.
   # signal => question. This is easiest to code/maintain.
   CRIMINOLOGY_SIGNALS = {
-    :family => [:single, :divorced, :dysfunctional_family, :absent_father, :childhood_abuse, :loners]    
+    :family => [:single, :divorced, :absent_father, :childhood_abuse, :loners]    
+  }
+  
+  # Human-readable versions of our criminology signals. Make sure these match
+  # the above list.
+  CRIMINOLOGY_TEXTS = {
+    :single => 'What family? I\'m single.',
+    :divorced => 'I\'m divorced.',
+    :absent_father => 'My father was never around when I was young.',
+    :childhood_abuse => 'My parents used to beat me when they got drunk.',
+    :loners => 'We moved around from homeless shelter to homeless shelter. I never had friends.'
   }
   
   def initialize
@@ -188,7 +198,7 @@ class EvidenceGenerator
     non_victims.each do |npc|      
       signals = flattened_criminology.sample(npc.evidence_count)
       Logger.debug("\t#{npc.name} has #{signals.count} criminology signals: #{signals}.")
-      npc.answer_questions(signals, reverse_criminology) unless signals.empty?
+      npc.answer_questions(signals, reverse_criminology, CRIMINOLOGY_TEXTS) unless signals.empty?
     end
   end
 end

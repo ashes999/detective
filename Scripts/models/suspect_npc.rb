@@ -15,7 +15,8 @@ class SuspectNpc < Npc
   WILL_NOW_TALK_MESSAGE = 'Okay, fine, I\'ll talk. What do you want to know?'
   
   ASKABLE_QUESTIONS = {
-    :family => 'Tell me about your family.'
+    :family => 'Tell me about your family.',
+    :prior_record => 'Do you have a previous criminal record?'
   }
   
   # evidence_count: the number of signals (suspicious information) that this person is the killer.
@@ -130,6 +131,7 @@ class SuspectNpc < Npc
     
     # Given :family, append all texts together
     texts = @my_questions[category]
+    texts << EvidenceGenerator::CATEGORY_DEFAULTS[category] if texts.nil? || texts.empty?
     asked = texts.join(' ')
     m = "#{@name}: #{asked}"
     Game_Interpreter.instance.show_message(m)

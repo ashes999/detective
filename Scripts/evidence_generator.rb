@@ -16,17 +16,31 @@ class EvidenceGenerator
   # Ask different questions per-person, based on their criminology signals.
   # signal => question. This is easiest to code/maintain.
   CRIMINOLOGY_SIGNALS = {
-    :family => [:single, :divorced, :absent_father, :childhood_abuse, :loners]    
+    :family => [:single, :divorced, :absent_father, :childhood_abuse, :loners],
+    :prior_record => [:criminal_history, :psychiatric_history, :alcohol_abuse, :substance_abuse, :tortured_animals]
+  }
+  
+  CATEGORY_DEFAULTS = {
+    :family => 'I don\'t have much family.',
+    :prior_record => 'Prior record? I\'m clean. What\'s it to you?'
   }
   
   # Human-readable versions of our criminology signals. Make sure these match
   # the above list.
   CRIMINOLOGY_TEXTS = {
+    # :family
     :single => 'What family? I\'m single.',
     :divorced => 'I\'m divorced.',
     :absent_father => 'My father was never around when I was young.',
     :childhood_abuse => 'My parents used to beat me when they got drunk.',
-    :loners => 'We moved around from homeless shelter to homeless shelter. I never had friends.'
+    :loners => 'We moved around from homeless shelter to homeless shelter. I never had friends.',
+    
+    # :prior_record
+    :criminal_history => '... I have a couple of charges from a few years ago, so what?',
+    :psychiatric_history => '... You can ask my shrink. He says I\'m "normal" now.',
+    :alcohol_abuse => "... I got out of Alcoholics Anonymous #{rand(7) + 3} years ago. I'm clean.",
+    :substance_abuse => '... So what if I got caught with some weed? I\'m clean now.',
+    :tortured_animals => "... It isn't true that I tortured #{['rabbits', 'cats', 'squirrels'].sample}. There's no proof of that!"
   }
   
   def initialize

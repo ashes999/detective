@@ -14,7 +14,8 @@ module Config
 end
 
 class Game_Player < Game_Character
-alias original_update_nonmoving update_nonmoving
+  alias original_update_nonmoving update_nonmoving
+  
   def update_nonmoving(*args, &block)
     original_update_nonmoving(*args, &block)
     $game_switches[Config::ACTIVATION_SWITCH] = false

@@ -37,7 +37,7 @@ class Npc
   
   # set event up correctly with graphics, speed, etc. so it looks like us
   def update_event(event)    
-    @event = event    
+    @event = event unless event.nil? 
     @event.set_graphic(@spritesheet_file, @spritesheet_index)    
     @event.move_speed = @move_speed
     @event.move_frequency = @move_frequency
@@ -76,5 +76,18 @@ class Npc
    def y
     return nil if @event.nil?
     return @event.y
+  end
+end
+
+###
+# Fixes integration with the alternate_talk mod. Without this, pressing the
+# trigger button causes the NPC to change and change back to their original
+# sprite (from the template event).
+###
+class Game_CharacterBase
+  alias original_update update
+  def update
+    original_update
+    @npc.update_event(nil) unless @npc.nil?
   end
 end

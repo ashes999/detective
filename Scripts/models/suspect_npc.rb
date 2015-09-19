@@ -12,6 +12,7 @@ class SuspectNpc < Npc
     
   RESIST_TALKING_MESSAGES = ['Go away!', 'I don\t have anything to say to you.', 'You a cop? I don\'t talk to cops.', 'We can talk in the presence of my lawyer.', '...']
   WILL_NOW_TALK_MESSAGE = 'Okay, fine, I\'ll talk. What do you want to know?'
+  ASKABLE_QUESTIONS = ['Tell me about your family.', 'Never mind.']
   
   # evidence_count: the number of signals (suspicious information) that this person is the killer.
   # Starts set to some value, and decreases every time we actualize a signal (eg. create weak alibi)
@@ -65,6 +66,11 @@ class SuspectNpc < Npc
     DetectiveGame::instance.notebook.note("#{@name}: #{message}")
     
     Game_Interpreter.instance.show_message("\\N[1]: I've heard everything #{@name} has to say.") if (@messages - @messages_said).empty?
+  end
+  
+  def show_questions
+    Game_Interpreter::instance.show_message("\\N[1]: So ...", :wait => false)
+    choice = Game_Interpreter::instance.show_choices(ASKABLE_QUESTIONS, { :cancel_index => ASKABLE_QUESTIONS.length - 1, :return_type => :name})
   end
   
   def profile

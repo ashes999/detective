@@ -62,8 +62,9 @@ class SuspectNpc < Npc
     end
     
     @messages_said << message unless @messages_said.include?(message)
-    Game_Interpreter.instance.show_message("#{@name}: #{message}")
-    DetectiveGame::instance.notebook.note("#{@name}: #{message}")
+    message = "#{@name}: #{message}" unless message.include?('is dead')
+    Game_Interpreter.instance.show_message(message)
+    DetectiveGame::instance.notebook.note(message)
     
     Game_Interpreter.instance.show_message("\\N[1]: I've heard everything #{@name} has to say.") if (@messages - @messages_said).empty?
   end

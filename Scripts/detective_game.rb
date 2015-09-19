@@ -182,7 +182,7 @@ class DetectiveGame
     non_victims.map { |n| initial_sum += n.evidence_count }
     
     non_victims.each { |n| n.augment_profile }
-    @victim.evidence_count = rand(2) # 0 or 1 signal
+    @victim.evidence_count = rand(2) # 0 or 1 signal, just "for fun"
     @victim.augment_profile
     
     # Everyone needs an alibi. Weak alibis are a signal.
@@ -217,7 +217,7 @@ class DetectiveGame
   end
   
   def generate_signals_and_profiles(num_signals, non_victims, difficulty)
-  ###
+    ###
     # Generate a distribution. For now, just randomly add evidence to NPCs, and
     # when we're done, use the variance to tell how difficult it is. A variance
     # of 6 is pretty big (eg. distro is [6, 6, 12]; more than that is too much.
@@ -257,7 +257,7 @@ class DetectiveGame
     #
     ### End distribution
     
-    # For now, the killer has the most signals. Swap to ensure that.
+    # For now, the killer has the most signals. Swap to ensure it.
     non_victims.each do |n|
       if n.evidence_count > @killer.evidence_count
         temp = @killer.evidence_count        
@@ -266,9 +266,7 @@ class DetectiveGame
       end
     end
     
-    # Make sure nobody ties with us. Always be one more.
-    # TODO: the killer shouldn't necessarily have more signals, but you should
-    # be able to rule out people with more signals or better signals than him/her.
+    # There might be a tie at max. Win by +1.
     @killer.evidence_count += 1
   end
   

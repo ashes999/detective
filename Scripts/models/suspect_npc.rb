@@ -12,7 +12,10 @@ class SuspectNpc < Npc
     
   RESIST_TALKING_MESSAGES = ['Go away!', 'I don\t have anything to say to you.', 'You a cop? I don\'t talk to cops.', 'We can talk in the presence of my lawyer.', '...']
   WILL_NOW_TALK_MESSAGE = 'Okay, fine, I\'ll talk. What do you want to know?'
-  ASKABLE_QUESTIONS = ['Tell me about your family.', 'Never mind.']
+  
+  ASKABLE_QUESTIONS = {
+    :family => 'Tell me about your family.'
+  }
   
   # evidence_count: the number of signals (suspicious information) that this person is the killer.
   # Starts set to some value, and decreases every time we actualize a signal (eg. create weak alibi)
@@ -41,7 +44,13 @@ class SuspectNpc < Npc
     @messages_said = []
     
     # After not talking this many times, we willingly talk
-    @resist_talking_times = -1    
+    # > 0 means "go away!"
+    # = 0 means "ok, ok, I'll talk!"
+    # -1 means just talk normally
+    @resist_talking_times = -1
+    
+    # signal => question
+    @criminology_signals = {}
   end
  
   def talk    
@@ -69,9 +78,22 @@ class SuspectNpc < Npc
     Game_Interpreter.instance.show_message("\\N[1]: I've heard everything #{@name} has to say.") if (@messages - @messages_said).empty?
   end
   
+  def answer_questions(signals, signal_to_question)
+    @criminology_signals = signals
+    @my_questions = []
+    
+    signals.each do |s|
+      question = signal_to_question[s] # eg. :family
+      question = ASKABLE_QUESTIONS[question] # :family => "Tell me about your family."      
+      @my_questions << question unless @my_questions.include?(question)
+    end
+    
+    Logger.debug "Questions for #{@name} are #{@my_questions}"
+  end
+  
   def show_questions
-    Game_Interpreter::instance.show_message("\\N[1]: So ...", :wait => false)
-    choice = Game_Interpreter::instance.show_choices(ASKABLE_QUESTIONS, { :cancel_index => ASKABLE_QUESTIONS.length - 1, :return_type => :name})
+    Game_Interpreter::instance.show_message("\\N[1]: So ...", :wait => false)    
+    choice = Game_Interpreter::instance.show_choices(@my_questions + ['Never mind.'], { :cancel_index => @my_questions.length, :return_type => :name})
   end
   
   def profile
@@ -96,11 +118,12 @@ class SuspectNpc < Npc
   end
   
   # These are the things that may consume evidence signals, so do them after we
-  # know how many signals each NPC has.
+  # know how many signals each NPC has. This consumes up to 4 signals max
+  # (0-2 in the criminal record, 0-1 in social media, 0-1 in interests)
   def augment_profile
     @criminal_record = generate_criminal_record
     @social_media = generate_social_media_profile
-    generate_suspicious_interests
+    generate_interests
     @messages << "I like #{@social_media[:post_topic]}!"
   end
   
@@ -129,7 +152,7 @@ class SuspectNpc < Npc
   private
   
   def pick_blood_type
-    # Based on culmulative distribution from http://www.redcrossblood.org/learn-about-blood/blood-types
+    # Based on cumulative distribution from http://www.redcrossblood.org/learn-about-blood/blood-types
     # O: 48% A: 31% B: 16% AB: 4%    
     blood_picked = rand(100)
     return 'O' if blood_picked < 48 # 48%
@@ -181,7 +204,7 @@ class SuspectNpc < Npc
     }
   end
   
-  def generate_suspicious_interests
+  def generate_interests
     if @evidence_count > 0 && rand(100) < ExternalData::instance.get(:suspicious_interests_probability)
       # TODO: have other people say this about this person, instead of them saying it themselves
       topic = ExternalData::instance.get(:suspicious_interests).sample

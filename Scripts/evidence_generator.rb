@@ -9,6 +9,16 @@ class EvidenceGenerator
   # IDs of events we copy to spawn these
   EVENT_IDS = { :blood_pool => 2, :fingerprints => 3 }
   
+  # None of these are mutually exclusive. They can all co-habit a single NPC.
+  # But, some of them naturally group into the same type of question. So, keep
+  # that, and when the player asks the right question, reveal all facts for that.
+  #
+  # Ask different questions per-person, based on their criminology signals.
+  # signal => question. This is easiest to code/maintain.
+  CRIMINOLOGY_SIGNALS = {
+    :family => [:single, :divorced, :dysfunctional_family, :absent_father, :childhood_abuse, :loners]    
+  }
+  
   def initialize
     raise 'Static class!'
   end
@@ -164,9 +174,21 @@ class EvidenceGenerator
   # Now, if NPCs have any evidence_count left, fill it with criminology signals.
   # For reference, these come from: https://github.com/deengames/detective/issues/5
   ###
-  def EvidenceGenerator::complete_profiles_with_criminology(non_victims)
-    c = 0
-    non_victims.map { |n| c += n.evidence_count }
-    Logger.debug "*** Final count: #{c} => #{non_victims}"
+  def EvidenceGenerator::complete_profiles_with_criminology(non_victims)    
+    reverse_criminology = {} # Used to figure out unique questions askable for an NPC    
+    flattened_criminology = [] # Used to randomly pick signals
+    
+    CRIMINOLOGY_SIGNALS.each do |question, signals|
+      signals.each do |signal|
+        reverse_criminology[signal] = question
+        flattened_criminology << signal
+      end    
+    end
+    
+    non_victims.each do |npc|      
+      signals = flattened_criminology.sample(npc.evidence_count)
+      Logger.debug("\t#{npc.name} has #{signals.count} criminology signals: #{signals}.")
+      npc.answer_questions(signals, reverse_criminology) unless signals.empty?
+    end
   end
 end

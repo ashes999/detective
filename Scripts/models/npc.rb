@@ -32,7 +32,7 @@ class Npc
     @death_spritesheet = @spritesheet_file == 'Actor1' || @spritesheet_file == 'Actor2' ? DEATH_SPRITESHEETS[0] : UNKNOWN    
     @name = name
     @map_id = map_id
-    @dead = false
+    @dead = false    
   end
   
   # set event up correctly with graphics, speed, etc. so it looks like us

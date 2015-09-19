@@ -9,7 +9,7 @@
 {
     "debug": true # set to false or delete for production; gives away lots of data
     "difficulty": 10, # ranges from 1 to 10. 10 = most number of NPCs and evidence.
-    #"universe": 291448708860702902396908131910872917680,
+    "universe": 4278491044995059461630088775821700081,
     
     # Min/max NPCs are at difficulty = 1
     "min_number_of_npcs": 4,

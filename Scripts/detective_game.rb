@@ -37,7 +37,7 @@ class DetectiveGame
   
   def initialize
     Logger.log('---------------------------------------------------')
-    
+
     if ExternalData::instance.key?(:universe)
       seed = ExternalData::instance.get(:universe) 
     else

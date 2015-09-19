@@ -12,6 +12,7 @@ require 'scripts/utils/enumerable_math'
 # Not directly used here, but just load them here so that they're defined when needed.
 require 'scripts/utils/json_parser'
 require 'scripts/ui/profiles_scene'
+require 'scripts/extensions/alternate_talk'
 
 #Font.default_name = ['ArabType']
 #Font.default_size = 22

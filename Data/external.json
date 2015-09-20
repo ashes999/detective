@@ -9,7 +9,7 @@
 {
     "debug": true # set to false or delete for production; gives away lots of data
     "difficulty": 10, # ranges from 1 to 10. 10 = most number of NPCs and evidence.
-    "universe": 97767110904428152781421481481771990750,
+    "universe": 339939367548317794658506943350812434330,
     
     # Min/max NPCs are at difficulty = 1
     "min_number_of_npcs": 4,
@@ -48,6 +48,5 @@
     "suspicious_interests_probability": 40,
     "suspicious_interests": ["rifles", "knives", "demons", "war", "the devil", "drones"],
     # If they don't? Their normal interests.
-    "benign_interests": ["flowers", "elephants", "Africa", "cooking", "painting"]
-    
+    "benign_interests": ["flowers", "elephants", "Africa", "cooking", "painting"],
 }

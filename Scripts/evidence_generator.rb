@@ -18,11 +18,7 @@ class EvidenceGenerator
   CRIMINOLOGY_SIGNALS = {
     :family => [:single, :divorced, :absent_father, :childhood_abuse, :loners],
     :prior_record => [:criminal_history, :psychiatric_history, :alcohol_abuse, :substance_abuse, :tortured_animals, :arson_history, :childhood_arson],
-  }
-  
-  CATEGORY_DEFAULTS = {
-    :family => 'I don\'t have much family.',
-    :prior_record => 'Prior record? I\'m clean. What\'s it to you?'
+    :biography => [:genius, :attempted_suicide, :poor_school_record, :unskilled_labor, :survived_poverty]
   }
   
   # Human-readable versions of our criminology signals. Make sure these match
@@ -38,11 +34,18 @@ class EvidenceGenerator
     # :prior_record
     :criminal_history => '... I have a couple of charges from a few years ago, so what?',
     :psychiatric_history => '... You can ask my shrink. He says I\'m "normal" now.',
-    :alcohol_abuse => "... I got out of Alcoholics Anonymous #{rand(7) + 3} years ago. I'm clean.",
+    :alcohol_abuse => '... I got out of Alcoholics Anonymous several years ago. I\'m clean.',
     :substance_abuse => '... So what if I got caught with some weed? I\'m clean now.',
-    :tortured_animals => "... It isn't true that I tortured #{['rabbits', 'cats', 'squirrels'].sample}. There's no proof of that!",
-    :childhood_arson => "Yeah, I set a couple of fires as a kid. So what? It was fun!",
-    :arson_history => "Oh man, you know about that? Yeah, I set off some fireworks indoors as a kid. My friends thought I was cool."
+    :tortured_animals => '... It isn\'t true that I tortured small animals. There\'s no proof of that!',
+    :childhood_arson => 'Yeah, I set a couple of fires as a kid. So what? It was fun!',
+    :arson_history => 'Oh man, you know about that? Yeah, I set off some fireworks indoors as a kid. My friends thought I was cool.',
+    
+    # :about_yourself
+    :genius => 'I possess a genius-level IQ.',
+    :attempted_suicide => 'I tried to kill myself once. Those were dark days.',
+    :poor_school_record => 'I never liked school much. Never did well in it, either.',
+    :unskilled_labor => 'I\'ve worked in a factory all my life.',
+    :survived_poverty => 'Living on the streets toughened me up pretty good.'
   }
   
   def initialize

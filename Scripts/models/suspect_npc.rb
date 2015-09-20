@@ -17,7 +17,7 @@ class SuspectNpc < Npc
   ASKABLE_QUESTIONS = {
     :family => 'Tell me about your family.',
     :prior_record => 'Do you have a previous criminal record?',
-    :arson => 'Is that a lighter in your pockets?'
+    :biography => 'Tell me about yourself.'
   }
   
   # evidence_count: the number of signals (suspicious information) that this person is the killer.
@@ -32,10 +32,11 @@ class SuspectNpc < Npc
   def initialize(map_id, name, spritesheet_file = nil, spritesheet_index = nil, template_id = nil, npc_speed = nil, npc_frequency = nil)
     super(name, spritesheet_file, spritesheet_index, template_id, npc_speed, npc_frequency)
     @map_id = map_id
+    data = ExternalData::instance
     
     # basic facts
     @age = 20 + rand(15)    
-    @profession = ExternalData::instance.get(:professions).sample
+    @profession = data.get(:professions).sample
     @blood_type = pick_blood_type
     @evidence_count = 0
     
@@ -122,6 +123,7 @@ class SuspectNpc < Npc
     
     questions_texts << 'Never mind.'
     choice = Game_Interpreter::instance.show_choices(questions_texts, { :cancel_index => questions_texts.length - 1, :return_type => :name})
+    return if choice == 'Never mind.'
     
     # map choice (eg. "Tell me about your family") to a key (eg. :family)   
     category = nil

@@ -104,8 +104,6 @@ class SuspectNpc < Npc
       
       @my_questions[category] << question_text
     end
-    
-    Logger.debug "\tQuestions for #{@name} are #{@my_questions}"
   end
   
   def show_questions
@@ -221,11 +219,9 @@ class SuspectNpc < Npc
     
     # Suspicious criminal record is a signal
     @evidence_count -= 1 # "minor" crimes are worth one evidence count
-    Logger.debug("S1: #{@name} #{@evidence_count}")
     return "#{@name} served a short jail sentence for #{ExternalData::instance.get(:minor_crimes).sample}." if severity < 85 || @evidence_count == 0
     
     @evidence_count -= 1 # "major" crimes are worth two evidence counts
-    Logger.debug("S2: #{@name} #{@evidence_count}")
     return "#{@name} served several years of combined jail time for #{ExternalData::instance.get(:major_crimes).sample(2).join(' and ')}."
   end
   

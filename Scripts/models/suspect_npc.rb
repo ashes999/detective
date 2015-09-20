@@ -16,7 +16,8 @@ class SuspectNpc < Npc
   
   ASKABLE_QUESTIONS = {
     :family => 'Tell me about your family.',
-    :prior_record => 'Do you have a previous criminal record?'
+    :prior_record => 'Do you have a previous criminal record?',
+    :arson => 'Is that a lighter in your pockets?'
   }
   
   # evidence_count: the number of signals (suspicious information) that this person is the killer.
@@ -40,7 +41,7 @@ class SuspectNpc < Npc
     
     @messages = [      
       "Isn't it #{['strange', 'scary', 'sad', 'unfortunate'].sample}, what happened?",
-      "The weather today #{['sucks', 'rocks', 'is okay', 'bothers me', 'confuses me'].sample}."
+      "The weather today totally #{['sucks', 'rocks', 'is okay', 'bothers me', 'confuses me'].sample}."
     ]
     
     @messages_said = []
@@ -129,13 +130,15 @@ class SuspectNpc < Npc
     end
     raise "Can't figure out the question type of #{choice}" if category.nil?
     
-    # Given :family, append all texts together
+    # Given a question key like :family, show all the messages, in serial. Yes,
+    # this can be a long list if the RNG turns against you (eg. up to six evidences
+    # left over, and all in one category).
     texts = @my_questions[category]
-    texts << EvidenceGenerator::CATEGORY_DEFAULTS[category] if texts.nil? || texts.empty?
-    asked = texts.join(' ')
-    m = "#{@name}: #{asked}"
-    Game_Interpreter.instance.show_message(m)
-    DetectiveGame::instance.notebook.note m
+    texts.each do |text|
+      m = "#{@name}: #{text}"
+      Game_Interpreter.instance.show_message(m)
+      DetectiveGame::instance.notebook.note m
+    end
   end
   
   def profile

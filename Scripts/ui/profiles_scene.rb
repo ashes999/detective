@@ -1,3 +1,4 @@
+# Hierarchy of OK/OK/OK: suspects => details => status
 class Scene_Profiles < Scene_ItemBase
   # Start Processing
   def start
@@ -21,9 +22,11 @@ class Scene_Profiles < Scene_ItemBase
   def create_details_window
     wy = @suspect_list.y + @suspect_list.height
     wh = Graphics.height - wy  - @status_window.height
-    @details_window = Window_ItemList.new(0, wy, Graphics.width, wh)
+    @details_window = Window_Selectable.new(0, wy, Graphics.width, wh)
     @details_window.viewport = @viewport
-    @suspect_list.details_window = @details_window    
+    @suspect_list.details_window = @details_window
+    @details_window.set_handler(:ok, method(:on_details_ok))
+    @details_window.set_handler(:cancel, method(:on_details_cancel))    
   end
   
   def create_status_window    
@@ -35,23 +38,37 @@ class Scene_Profiles < Scene_ItemBase
     @status_window.deactivate
   end
 
-  # when you select a suspect
+  # go to details list
   def on_suspect_ok    
-    @status_window.activate
-    @details_window.deactivate
+    @suspect_list.deactivate
+    @details_window.activate
+    @details_window.select(0)
   end
   
   def on_status_cancel
-    # go back to suspect list
+    # go back to details list
     @status_window.deactivate
-    @suspect_list.activate
+    @details_window.activate
+    @details_window.select(0)
   end
   
-  def on_status_ok
+  def on_status_ok    
     npc_index = @suspect_list.index
     status = @status_window.current_symbol
     DetectiveGame::instance.notebook.set_npc_status(npc_index, status)    
-    on_status_cancel # go back to suspect list
+    on_status_cancel # go back to details list
+  end
+  
+  def on_details_ok
+    @status_window.activate
+    @details_window.deactivate
+    @details_window.unselect
+  end
+  
+  def on_details_cancel
+    @suspect_list.activate
+    @details_window.deactivate
+    @details_window.unselect
   end
 end
 
@@ -69,7 +86,7 @@ class Window_SuspectsList < Window_HorzCommand
   
   ### Maximum number of items to show at one time. Items are fixed width :(
   def col_max
-    return 6
+    return DetectiveGame::instance.npcs.count
   end
 
   def make_command_list

@@ -10,6 +10,7 @@ require 'scripts/evidence_generator'
 require 'scripts/utils/enumerable_math'
 
 # Not directly used here, but just load them here so that they're defined when needed.
+# UI, mods, extensions, utils, etc.
 require 'scripts/utils/json_parser'
 require 'scripts/ui/profiles_scene'
 require 'scripts/extensions/alternate_talk'

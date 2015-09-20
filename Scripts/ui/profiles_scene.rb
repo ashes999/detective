@@ -22,7 +22,7 @@ class Scene_Profiles < Scene_ItemBase
   def create_details_window
     wy = @suspect_list.y + @suspect_list.height
     wh = Graphics.height - wy  - @status_window.height
-    @details_window = Window_Selectable.new(0, wy, Graphics.width, wh)
+    @details_window = Window_SuspectDetails.new(0, wy, Graphics.width, wh)
     @details_window.viewport = @viewport
     @suspect_list.details_window = @details_window
     @details_window.set_handler(:ok, method(:on_details_ok))
@@ -142,5 +142,11 @@ class Window_SuspectsStatus < Window_HorzCommand
     Notebook.STATUS_MAP.keys.each do |c|
       add_command(c.to_s.capitalize, c)
     end
+  end
+end
+
+class Window_SuspectDetails < Window_Selectable
+  def item_max
+    return 99 # word-wrapping makes it impossible to actually count the right value.
   end
 end

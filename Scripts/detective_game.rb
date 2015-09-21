@@ -194,13 +194,18 @@ class DetectiveGame
     # 50% chance to put the murder weapon in the house of an NPC
     if rand(50) <= 100
       # Pick a suitable NPC first
-      npc = non_victims.select { |n| n.evidence_count >= 2 }.sample
-      npc.evidence_count -= 2
-      # Pick something on their map as the murder weapon
-      @murder_weapon = @potential_murder_weapons.select { |weapon, map| map == npc.map_id }.keys.sample
-      Logger.debug "Murder weapon (#{npc.name}'s house): #{@murder_weapon}"
-      murder_weapon_in_whose_house = npc
-    else
+      suitable_npcs = non_victims.select { |n| n.evidence_count >= 2 }
+      if !suitable_npcs.empty?
+        npc = suitable_npcs.sample
+        npc.evidence_count -= 2
+        # Pick something on their map as the murder weapon
+        @murder_weapon = @potential_murder_weapons.select { |weapon, map| map == npc.map_id }.keys.sample
+        Logger.debug "Murder weapon (#{npc.name}'s house): #{@murder_weapon}"
+        murder_weapon_in_whose_house = npc
+      end
+    end
+    
+    if murder_weapon_in_whose_house.nil?
       # goes in the mansion
       @murder_weapon = @potential_murder_weapons.select { |weapon, map| map == MANSION_MAP_ID }.keys.sample
       Logger.debug "Murder weapon (mansion): #{@murder_weapon}"

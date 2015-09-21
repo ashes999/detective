@@ -217,9 +217,8 @@ class EvidenceGenerator
     end
     
     non_victims.each do |npc|
-      Logger.debug "\t#{npc.name} has #{npc.evidence_count} evidence."
-      signals = flattened_criminology.sample(npc.evidence_count)      
-      Logger.debug "\tConverted that into signals: #{signals}"
+      Logger.debug "\t#{npc.name} has #{npc.evidence_count} evidence/criminology-signals."
+      signals = flattened_criminology.sample(npc.evidence_count)            
       npc.answer_questions(signals, reverse_criminology, CRIMINOLOGY_TEXTS) unless signals.empty?
     end
   end

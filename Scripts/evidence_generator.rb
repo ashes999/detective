@@ -81,7 +81,7 @@ class EvidenceGenerator
       npcs_evidence = evidence_available.sample(evidence_per_npc + 1).uniq
       evidence_available -= npcs_evidence
       
-      Logger.debug("Generating evidence for #{npc.name}; their draw of #{evidence_per_npc}: #{npcs_evidence}")
+      Logger.debug("Generating evidence for #{npc}; their draw of #{evidence_per_npc}: #{npcs_evidence}")
       
       # NPC's blood in the mansion
       if npc.evidence_count >= 1 && npcs_evidence.include?(:npc_blood_pool)
@@ -119,7 +119,7 @@ class EvidenceGenerator
           # Worth one evidence count, unless it's >= 70% match, in which case,
           # it's worth two evidence counts.
           npc.evidence_count -= 1          
-          npc.evidence_count -= 1 if e.match_probability >= 70
+          npc.evidence_count -= 1 if e.match_probability >= 70 && npc.evidence_count >= 1
           Logger.debug("\tGenerated #{npc.name}'s fingerprints in the mansion")
           npcs_evidence.delete(:fingerprints)
         else
@@ -182,7 +182,7 @@ class EvidenceGenerator
       else
         npc.on_victim(:love, victim)
       end
-      
+            
       if npc.evidence_count > 0 && npcs_evidence.include?(:resist_talking)
         npc.resist_talking
         npc.evidence_count -= 1
@@ -190,9 +190,11 @@ class EvidenceGenerator
       end
       
       if !npcs_evidence.empty?
-        Logger.debug "Refunding unusable evidence for #{npc.name}: #{npcs_evidence}"
+        Logger.debug "\tRefunding unusable evidence for #{npc}: #{npcs_evidence}"
         evidence_available += npcs_evidence
       end
+      
+      Logger.debug "\tFinal count for #{npc}"
     end    
     
     return evidence
@@ -205,7 +207,7 @@ class EvidenceGenerator
   ###
   def EvidenceGenerator::complete_profiles_with_criminology(non_victims)    
     reverse_criminology = {} # Used to figure out unique questions askable for an NPC    
-    flattened_criminology = [] # Used to randomly pick signals
+    flattened_criminology = [] # Used to randomly pick signals    
     
     CRIMINOLOGY_SIGNALS.each do |question, signals|
       signals.each do |signal|
@@ -214,9 +216,10 @@ class EvidenceGenerator
       end    
     end
     
-    non_victims.each do |npc|      
-      signals = flattened_criminology.sample(npc.evidence_count)
-      Logger.debug("\t#{npc.name} has #{signals.count} criminology signals: #{signals}.")
+    non_victims.each do |npc|
+      Logger.debug "\t#{npc.name} has #{npc.evidence_count} evidence."
+      signals = flattened_criminology.sample(npc.evidence_count)      
+      Logger.debug "\tConverted that into signals: #{signals}"
       npc.answer_questions(signals, reverse_criminology, CRIMINOLOGY_TEXTS) unless signals.empty?
     end
   end

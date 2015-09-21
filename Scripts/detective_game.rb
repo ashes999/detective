@@ -207,7 +207,7 @@ class DetectiveGame
     end
     
     raise "Something went terribly wrong with murder weapon selection" if @murder_weapon.nil?
-    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, @npc_maps, MANSION_MAP_ID, @notebook, @potential_murder_weapons.keys, @murder_weapon, murder_weapon_in_whose_house)
+    @evidences = EvidenceGenerator::distribute_evidence(non_victims, @victim, @npc_maps, MANSION_MAP_ID, @notebook, @potential_murder_weapons.keys, @murder_weapon, murder_weapon_in_whose_house)    
     EvidenceGenerator::complete_profiles_with_criminology(non_victims)
     
     Logger.debug '-' * 80
@@ -226,7 +226,7 @@ class DetectiveGame
     # for very difficult games.
     num_signals.times do
       npc = non_victims.sample
-      npc.evidence_count += 1      
+      npc.evidence_count += 1
     end
     
     # pick a variance from 6 (d=0) to 1.5 (d=10), uniformly distributed across difficulty
@@ -234,6 +234,7 @@ class DetectiveGame
     epsilon = 1
     v = non_victims.collect { |n| n.evidence_count }.variance
     Logger.debug "Target variance is #{target_variance}; starting with #{v}..."
+    Logger.debug "\tInitially, we have #{non_victims}"
     
     # Not within epsilon? we need to tweak variance.
     while (v - target_variance).abs >= epsilon
@@ -242,10 +243,10 @@ class DetectiveGame
         max = max_evidence_npc(non_victims)
         min = min_evidence_npc(non_victims)
         max.evidence_count -= 1
-        min.evidence_count += 1        
+        min.evidence_count += 1 
       else
         # Increase variance. Take two random people and swap. It works. Somehow.
-        r1 = non_victims.sample
+        r1 = non_victims.select { |n| n.evidence_count > 0 }.sample
         r2 = (non_victims - [r1]).sample
         r1.evidence_count -= 1
         r2.evidence_count += 1
@@ -253,7 +254,7 @@ class DetectiveGame
       
       v = non_victims.collect { |n| n.evidence_count }.variance      
     end
-    Logger.debug "Final variance is #{target_variance}; v=#{v}"
+    Logger.debug "\tFinal variance is #{v} npcs=#{non_victims}"
         
     #
     ### End distribution
@@ -267,8 +268,11 @@ class DetectiveGame
       end
     end
     
-    # There might be a tie at max. Win by +1.
-    @killer.evidence_count += 1
+    # If there are other people (non-killers) who also have the same (max) evidence
+    # count, then the killer should have one more. (We only apply it in this case,
+    # in order to not disturb the evidence_count variance too much.)
+    co_counts = non_victims.select { |n| n != @killer && n.evidence_count == @killer.evidence_count }
+    @killer.evidence_count += 1 unless co_counts.empty?
   end
   
   def max_evidence_npc(npcs)

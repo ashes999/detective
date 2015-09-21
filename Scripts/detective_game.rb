@@ -189,7 +189,6 @@ class DetectiveGame
     # Everyone needs an alibi. Weak alibis are a signal.
     generate_killers_alibi(non_killers)
     generate_alibis(non_killers)
-    
     murder_weapon_in_whose_house = nil
     # 50% chance to put the murder weapon in the house of an NPC
     if rand(50) <= 100
@@ -306,25 +305,27 @@ class DetectiveGame
   
   def generate_killers_alibi(non_killers)
     data = ExternalData::instance
+    npcs_left = []
+    non_killers.map { |n| npcs_left << n }
     
     # % chance of having a strong alibi as the killer
     strong_alibi = rand(100) <= data.get(:strong_alibi_probability)
     Logger.debug " Killer's alibi is strong? #{strong_alibi}"
-    Logger.debug "Non-killers: #{non_killers.collect {|n| n.name}}"
+    Logger.debug "Non-killers: #{npcs_left.collect {|n| n.name}}"
     
     if (strong_alibi)      
       # Make a pair, or a "ring" of three people who were together
       # 40% chance to be a ring
       make_ring = true if rand(100) <= data.get(:ring_alibi_probability)
       if make_ring
-        n1 = non_killers.pop
-        n2 = non_killers.pop        
+        n1 = npcs_left.pop
+        n2 = npcs_left.pop        
         n1.alibi_person = n2
         n2.alibi_person = @killer
         @killer.alibi_person = n1
         Logger.debug "Killer uses a ring-type alibi: #{@killer.name}, #{n1.name}, #{n2.name}}"
       else
-        alibi = non_killers.pop
+        alibi = npcs_left.pop
         @killer.alibi_person = alibi
         alibi.alibi_person = @killer
         Logger.debug "Killer has a mutual alibi with #{alibi.name}"
@@ -334,35 +335,41 @@ class DetectiveGame
       @killer.alibi_person = nil
     else
       @killer.evidence_count -= 1 # weak alibi: one indicator
-      @killer.alibi_person = non_killers.sample
+      @killer.alibi_person = npcs_left.sample
       Logger.debug "Killer has an obvious alibi which #{@killer.alibi_person.name} will not verify"
     end
   end
   
-  def generate_alibis(non_killers)  
+  def generate_alibis(non_killers)
+    npcs_left = []
+    non_killers.map { |n| npcs_left << n }
+    
     # Pick two random people and link their alibis
     # To deal with odd numbers, make a trio
-    while non_killers.size > 0 do
-      if (non_killers.count == 1)
-        loner = non_killers.pop
-        loner.alibi_person = nil
-        loner.evidence_count -= 1
+    while npcs_left.size > 0 do
+      if (npcs_left.count == 1)
+        Logger.debug "Loner: #{n3.name} was alone"
+        loner = npcs_left.pop
+        # It's hard to re-integrate them into a trio. But, we shouldn't get
+        # a negative evidence count. They're not the killer, so this won't
+        # affect gameplay much (it'll just imbalance evidence_count variance
+        # a bit).
+        loner.evidence_count -= 1 if loner.evidence_count > 0        
       else
-        n1 = non_killers.pop
-        n2 = non_killers.pop
+        n1 = npcs_left.pop
+        n2 = npcs_left.pop
         
-        if non_killers.size % 2 == 1
-          if rand(100) <= ExternalData::instance.get(:alone_alibi_probability)
+        if npcs_left.size % 2 == 1
+          n3 = npcs_left.pop
+          if rand(100) <= ExternalData::instance.get(:alone_alibi_probability) && n3.evidence_count > 0
             n1.alibi_person = n2
             n2.alibi_person = n1
-            Logger.debug "Alibi: #{n1.name} <=> #{n2.name}"
-            n3 = non_killers.pop
+            Logger.debug "Alibi: #{n1.name} <=> #{n2.name}"            
             n3.alibi_person = nil
             n3.evidence_count -= 1
             Logger.debug "Alibi: #{n3.name} was alone"
           else
             # ring alibi
-            n3 = non_killers.pop
             n1.alibi_person = n2
             n2.alibi_person = n3
             n3.alibi_person = n1

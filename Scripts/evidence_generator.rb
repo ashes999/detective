@@ -76,7 +76,7 @@ class EvidenceGenerator
       # the rest of the evidence_count when we generate personality/discussion stuff.
       # Similarly, if we don't have enough evidence_count for something, put it
       # back in the pool, and move on.
-      
+      next if npc.evidence_count == 0
       # Pad by +1 in the hope of getting more uniques
       npcs_evidence = evidence_available.sample(evidence_per_npc + 1).uniq
       evidence_available -= npcs_evidence
@@ -218,6 +218,7 @@ class EvidenceGenerator
     
     non_victims.each do |npc|
       Logger.debug "\t#{npc.name} has #{npc.evidence_count} evidence/criminology-signals."
+      next if npc.evidence_count == 0
       signals = flattened_criminology.sample(npc.evidence_count)            
       npc.answer_questions(signals, reverse_criminology, CRIMINOLOGY_TEXTS) unless signals.empty?
     end

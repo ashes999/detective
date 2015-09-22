@@ -46,6 +46,7 @@ class SuspectNpc < Npc
     ]
     
     @messages_said = []
+    @my_questions = []
     
     # After not talking this many times, we willingly talk
     # > 0 means "go away!"
